@@ -81,6 +81,11 @@ int Drink::getSinal(){
   return _sinal;
 }
 
+int Drink::getSize(){
+  //return _size;
+  return 12;
+}
+
 void Drink::println(){
   Serial.print(getDia());
   Serial.print("/");Serial.print(getMes());

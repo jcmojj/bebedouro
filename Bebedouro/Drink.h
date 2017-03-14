@@ -2,13 +2,15 @@
 #define Drink_h
 
 #include "Arduino.h"
+//#define _size 12
 
 class Drink{
   public:
     Drink();
     void setEmpty();
     boolean isEmpty();
-    void setValue(byte dia, byte mes, int ano, byte hora, byte minuto, byte segundo, int volumeMl,  char tipoSinal, int sinal); // 8 bytes
+    int getSize(); // return the value of bytes of one drink object
+    void setValue(byte dia, byte mes, int ano, byte hora, byte minuto, byte segundo, int volumeMl,  char tipoSinal, int sinal); // 12 bytes
     byte getDia();
     byte getMes();
     int getAno();
