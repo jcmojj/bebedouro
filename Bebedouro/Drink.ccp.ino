@@ -81,12 +81,48 @@ int Drink::getSinal(){
   return _sinal;
 }
 
+void Drink::setDia(byte dia){
+  _dia = dia;
+}
+
+void Drink::setMes(byte mes){
+  _mes = mes;
+}
+
+void Drink::setAno(int ano){
+  _ano = ano;
+}
+
+void Drink::setHora(byte hora){
+  _hora = hora;
+}
+
+void Drink::setMinuto(byte minuto){
+  _minuto = minuto;
+}
+
+void Drink::setSegundo(byte segundo){
+  _segundo = segundo;
+}
+
+void Drink::setVolumeMl(int volumeMl){
+  _volumeMl = volumeMl;
+}
+
+void Drink::setTipoSinal(char tipoSinal){
+  _tipoSinal = tipoSinal;
+}
+
+void Drink::setSinal(int sinal){
+  _sinal = sinal;
+}
+
 int Drink::getSize(){
   //return _size;
   return 12;
 }
 
-void Drink::println(){
+void Drink::print(){
   Serial.print(getDia());
   Serial.print("/");Serial.print(getMes());
   Serial.print("/");Serial.print(getAno());

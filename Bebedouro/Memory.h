@@ -37,6 +37,9 @@ class Memory{
     void saveAtMemory(Drink &drink);
     void print();
     void printData();
+    void printDrinkFromPosition(byte position);
+    void getDrinkFromPosition(byte position);
+    void setDrinkAtPosition(byte position);
 
     void teste2();
 

@@ -10,12 +10,24 @@ void setup() {
   Serial.println("Testes");
 
 
-//  Drink drink = Drink();
-//  drink.setValue(11,12,1984,11,50,30,57,'c',111);
+
+  drink.setValue(11,12,1984,11,50,30,57,'c',111);
+  drink.print();
+  memory.getDrinkFromPosition(1);
+  drink.print();
+  drink.setValue(11,12,1984,11,50,30,57,'c',111);
+  Serial.println("SET");
+  memory.setDrinkAtPosition(1);
+  drink.print();
+  Serial.println("GET");
+  memory.getDrinkFromPosition(1);
+  drink.print();
 //  Serial.print("Dia: "+ drink.getDia());
 //  // put your setup code here, to run once:
-  memory.print();
-  memory.printData();
+//  memory.print();
+//  memory.printData();
+  memory.printDrinkFromPosition(1);
+  memory.getDrinkFromPosition(1);
   //memory.teste2();
 }
 

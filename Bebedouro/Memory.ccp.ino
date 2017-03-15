@@ -1,10 +1,137 @@
 #include "Memory.h"
+#include "Drink.h"
 
 Memory::Memory(int size, Drink &drink, byte drinkSize){
   Serial.begin(9600);
   _drink = &drink;
   _size = size;
   _drinkSize = drinkSize;
+}
+
+void Memory::printDrinkFromPosition(byte position){
+  
+//   Drink drink = Drink();
+//      EEPROM.begin(memorySize);
+//      uint8_t value = 0;
+//      Serial.print("\n");
+//      Serial.print("Position"); Serial.print(" - ");
+//      int address =  dataMemoryBegin
+//      for(int address = dataMemoryBegin; address <= dataMemoryEnd; address++){
+//        value = EEPROM.read(address);
+//        if(value<100){Serial.print(" ");} if(value<10){Serial.print(" ");}
+//        Serial.print(value, DEC);      
+//        if((address+1)%25 == 0){
+//          Serial.print("-(address=");if(address<100){Serial.print(" ");} if(address<10){Serial.print(" ");}Serial.print(address);Serial.print(")");
+//          Serial.println("");
+//            if(address != dataMemoryEnd){Serial.print("(address=");if((address+1)<100){Serial.print(" ");} if((address+1)<10){Serial.print(" ");}Serial.print(address+1);Serial.print(")-");}
+//        delay(1);
+//        }else{
+//        Serial.print("-");
+//        }
+//      }
+//      EEPROM.end();
+   
+}
+
+void Memory::getDrinkFromPosition(byte position){
+  EEPROM.begin(memorySize);
+  int address =  dataMemoryBegin + _drinkSize*position;
+  _drink->setDia((byte)EEPROM.read(address));
+  address += sizeof(byte);
+  _drink->setMes((byte)EEPROM.read(address));
+  address += sizeof(byte);
+  int ano = ((int)(EEPROM.read(address))) << 8;
+  address += sizeof(byte);
+  ano += ((int)(EEPROM.read(address)));
+  _drink->setAno(ano);
+  address += sizeof(byte);
+  _drink->setHora((byte)EEPROM.read(address));
+  address += sizeof(byte);
+  _drink->setMinuto((byte)EEPROM.read(address));
+  address += sizeof(byte);
+  _drink->setSegundo((byte)EEPROM.read(address));
+  address += sizeof(byte);
+  int volumeMl = ((int)(EEPROM.read(address))) << 8;
+  address += sizeof(byte);
+  volumeMl += ((int)(EEPROM.read(address)));
+  _drink->setVolumeMl(volumeMl);
+  address += sizeof(byte);
+  Serial.print("TipoSinal: "); Serial.println((char)EEPROM.read(address));
+  _drink->setTipoSinal((char)EEPROM.read(address));
+  Serial.print("TipoSinalJust: "); Serial.println(_drink->getTipoSinal());
+  address += sizeof(byte);
+  int sinal = ((int)(EEPROM.read(address))) << 8;
+  address += sizeof(byte);
+  sinal += ((int)(EEPROM.read(address)));
+  _drink->setSinal(sinal);
+  EEPROM.end();
+}
+
+void Memory::setDrinkAtPosition(byte position){
+  EEPROM.begin(memorySize);
+  int address =  dataMemoryBegin + _drinkSize*position;
+  EEPROM.write(address,_drink->getDia());
+  address += sizeof(byte);
+  EEPROM.write(address,_drink->getMes());
+//  address += sizeof(byte);
+//  EEPROM.write(address,_drink->getMes());
+  address += sizeof(byte);
+//  Serial.print("Ano: "); Serial.println(_drink->getAno());
+//  Serial.print("(byte)Ano: "); Serial.println((byte)(_drink->getAno()));
+//  Serial.print("(byte)(Ano>>8): "); Serial.println((byte)((_drink->getAno())>>8));  
+  EEPROM.write(address,(byte)((_drink->getAno())>>8)); 
+  address += sizeof(byte);
+  EEPROM.write(address,(byte)(_drink->getAno()));
+//  int ano = ((int)(EEPROM.read(address))) << 8;
+//  address += sizeof(byte);
+//  ano += ((int)(EEPROM.read(address)));
+//  _drink->setAno(ano);
+  address += sizeof(byte);
+  EEPROM.write(address,_drink->getHora());
+//  _drink->setHora((byte)EEPROM.read(address));
+  address += sizeof(byte);
+  EEPROM.write(address,_drink->getMinuto());
+//  address += sizeof(byte);
+//  _drink->setMinuto((byte)EEPROM.read(address));
+  address += sizeof(byte);
+  EEPROM.write(address,_drink->getSegundo());
+//  address += sizeof(byte);
+//  _drink->setSegundo((byte)EEPROM.read(address));
+  address += sizeof(byte);
+//  Serial.print("Ano: "); Serial.println(_drink->getAno());
+//  Serial.print("(byte)Ano: "); Serial.println((byte)(_drink->getAno()));
+//  Serial.print("(byte)(Ano>>8): "); Serial.println((byte)((_drink->getAno())>>8));  
+  EEPROM.write(address,(byte)((_drink->getVolumeMl())>>8)); 
+  address += sizeof(byte);
+  EEPROM.write(address,(byte)(_drink->getVolumeMl()));
+  address += sizeof(byte);
+//  address += sizeof(byte);
+//  int volumeMl = ((int)(EEPROM.read(address))) << 8;
+//  address += sizeof(byte);
+//  volumeMl += ((int)(EEPROM.read(address)));
+//  _drink->setVolumeMl(volumeMl);
+  //address += sizeof(byte);
+  Serial.print("TipoSinalAfter: "); Serial.println((_drink->getTipoSinal()));
+  EEPROM.write(address,(_drink->getTipoSinal()));
+  Serial.print("TipoSinalAfterAfter: "); Serial.println((char)EEPROM.read(address));
+//  _drink->setTipoSinal((char)EEPROM.read(address));
+  address += sizeof(byte);
+  EEPROM.write(address,(byte)((_drink->getSinal())>>8)); 
+  address += sizeof(byte);
+  EEPROM.write(address,(byte)(_drink->getSinal()));
+//  int sinal = ((int)(EEPROM.read(address))) << 8;
+//  address += sizeof(byte);
+//  sinal += ((int)(EEPROM.read(address)));
+//  _drink->setSinal(sinal);
+  EEPROM.end();
+}
+
+void Memory::saveAtMemory(Drink &drink){
+  
+}
+
+bool Memory::isDrinkToSend(){
+  
 }
 
 void Memory::print(){
@@ -22,7 +149,7 @@ void Memory::print(){
 
   
   delay(1);
-  EEPROM.begin(_size);
+  EEPROM.begin(memorySize);
   uint8_t value = 0;
 
   Serial.print("\n");
@@ -97,7 +224,7 @@ void Memory::print(){
 }
 
 void Memory::printData(){
-  EEPROM.begin(_size);
+  EEPROM.begin(memorySize);
   uint8_t value = 0;
   Serial.print("\n");
   Serial.println("Data Memory"); 
@@ -115,97 +242,18 @@ void Memory::printData(){
         Serial.print("-");
       }
   }
-//  Serial.print("\nSerial Number Memory from "); Serial.print(SNBegin); Serial.print(" to "); Serial.println(SNEnd);
-//
-//  Serial.print("(address= ");Serial.print(SNBegin);Serial.print(")-");
-//  for(byte address = SNBegin; address <= SNEnd; address++){
-//      value = EEPROM.read(address);
-//      if(value<100){
-//        Serial.print(" ");
-//      }
-//      if(value<10){
-//        Serial.print(" ");
-//      }
-//      Serial.print(value, DEC);      
-//      if((address+1)%10 == 0){
-//        Serial.print("-(address=");if(address == 9){Serial.print(" ");}Serial.print(address);Serial.print(")");
-//        Serial.println("");
-//        if(address != SNEnd){Serial.print("(address=");Serial.print(address+1);Serial.print(")-");}
-//        delay(1);
-//      }else{
-//        Serial.print("-");
-//      }
-//  }
-//
-//  Serial.print("\nPosicao"); Serial.print(0);Serial.print(": ");
-//  Serial.print("(address= ");Serial.print(memoryBegin);Serial.print(")-");
-//  for(int address = memoryBegin; address <= memoryEnd; address++){
-//      delay(1);
-//      value = EEPROM.read(address);
-//      if(value<100){
-//        Serial.print(" ");
-//      }
-//      if(value<10){
-//        Serial.print(" ");
-//      }
-//      Serial.print(value, DEC);      
-//      if(((address-memoryBegin+1)%_drinkSize) == 0){
-//        Serial.print("-(address=");Serial.print(address);Serial.print(")");
-//        Serial.print("\nPosicao"); Serial.print((address-memoryBegin+1)/12);Serial.print(": ");
-//        if(address != memoryEnd){Serial.print("(address=");Serial.print(address+1);Serial.print(")-");}
-//        delay(1);
-//      }else{
-//        Serial.print("-");
-//      }
-//  }
-  
-  
-//  for(int address = memoryBegin; address <= memoryEnd; address++){
-//    Serial.print("(");Serial.print(address);Serial.print(")");
-//    if(((address-memoryBegin+1))%12 == 0){
-//      Serial.print("\nPosicao"); Serial.print((address-memoryBegin+1)/12);Serial.print(": ");    
-//    }
-//      value = EEPROM.read(address);
-//      Serial.print(value, DEC); 
-//    
-//
-//    
-//  }
   EEPROM.end();
-}
-
-void Memory::saveAtMemory(Drink &drink){
-  
-}
-
-bool Memory::isDrinkToSend(){
-  
 }
 
 
 
 
 void Memory::teste(){
-  _drink->println();
+  _drink->print();
   int ano = _drink->getAno();
   Serial.print("Ano:"); Serial.println(ano);
 }
 
-void Memory::teste2(){
-  EEPROM.begin(_size);
-  for(int address = 0; address<_size; address++){
-    uint8_t var = EEPROM.read(address);
-    delay(1);
-    Serial.print(var);
-    Serial.print("Address: "); Serial.print(address); 
-    //Serial.print(" - SP:"); Serial.print(var);
-    //Serial.print(" - SW:"); Serial.write(EEPROM.read(address));
-    //Serial.print(" - SP(int):"); Serial.print((int)EEPROM.read(address));
-    //Serial.print(" - SW(int):"); Serial.write((int)EEPROM.read(address));
-    //Serial.print(" - SP(char):"); Serial.print((char)EEPROM.read(address));
-    //Serial.print(" - SW(char):"); Serial.write((char)EEPROM.read(address));
-    Serial.println("");
-  }
-}
+
 
 

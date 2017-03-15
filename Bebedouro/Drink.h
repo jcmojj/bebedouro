@@ -20,7 +20,18 @@ class Drink{
     int getVolumeMl();
     char getTipoSinal();
     int getSinal();
-    void println();
+    
+    void setDia(byte dia);
+    void setMes(byte mes);
+    void setAno(int ano);
+    void setHora(byte hora);
+    void setMinuto(byte minuto);
+    void setSegundo(byte segundo);
+    void setVolumeMl(int volumeMl);
+    void setTipoSinal(char tipoSinal);
+    void setSinal(int sinal);
+    
+    void print();
 
   private:
     byte _dia;
