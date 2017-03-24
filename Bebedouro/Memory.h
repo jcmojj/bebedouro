@@ -10,7 +10,7 @@
 #define ssidPassword 50
 #define userName 50
 #define userEmail 50
-#define dataMemorySize (_drinkSize*256)
+#define dataMemorySize (_drinkSize*255)
 
 #define serialNumberBegin 0
 #define serialNumberEnd (serialNumberBegin+serialNumber-1)
@@ -33,8 +33,16 @@
 class Memory{
   public:
     Memory(int size, Drink &drink, byte drinkSize);
-    bool isDrinkToSend();
-    void saveAtMemory(Drink &drink);
+    byte whatIsNextDrinkPositionToBeSent();
+    byte confirmDrinkWasSend();
+    void clearMemory();
+    void clearDataMemory();
+    void clearDrinkMemoryAtPosition(byte position);
+
+    byte getFilledAddressFromBeginScan();
+    byte getFilledAddressFromEndScan();
+    byte getFirstFilledAddressFromEndScan();
+    
     void print();
     void printData();
     void printDrinkFromPosition(byte position);
