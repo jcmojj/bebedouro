@@ -2,6 +2,7 @@
 #include "Drink.h"
 
 Memory::Memory(int size, Drink &drink, byte drinkSize) {
+//  Serial.begin(9600);
   _drink = &drink;
   _size = size;
   _drinkSize = drinkSize;
@@ -43,138 +44,213 @@ void Memory::getDrinkFromPosition(byte position) {
   address += sizeof(byte);
   sinal += ((int)(EEPROM.read(address)));
   _drink->setSinal(sinal);
+  delay(1);
   EEPROM.end();
 }
 
 void Memory::setDrinkAtPosition(byte position) {
   EEPROM.begin(memorySize);
   int address =  dataMemoryBegin + _drinkSize * (position - 1);
-  EEPROM.write(address, _drink->getDia());
+  if(EEPROM.read(address) != _drink->getDia()){EEPROM.write(address, _drink->getDia());}
   address += sizeof(byte);
-  EEPROM.write(address, _drink->getMes());
+  if(EEPROM.read(address) != _drink->getMes()){EEPROM.write(address, _drink->getMes());}
   address += sizeof(byte);
-  EEPROM.write(address, (byte)((_drink->getAno()) >> 8));
+  if(EEPROM.read(address) != (byte)((_drink->getAno()) >> 8)){EEPROM.write(address, (byte)((_drink->getAno()) >> 8));}
   address += sizeof(byte);
-  EEPROM.write(address, (byte)(_drink->getAno()));
+  if(EEPROM.read(address) != (byte)(_drink->getAno())){EEPROM.write(address, (byte)(_drink->getAno()));}
   address += sizeof(byte);
-  EEPROM.write(address, _drink->getHora());
+  if(EEPROM.read(address) != _drink->getHora()){EEPROM.write(address, _drink->getHora());}
   address += sizeof(byte);
-  EEPROM.write(address, _drink->getMinuto());
+  if(EEPROM.read(address) != _drink->getMinuto()){EEPROM.write(address, _drink->getMinuto());}
   address += sizeof(byte);
-  EEPROM.write(address, _drink->getSegundo());
+  if(EEPROM.read(address) != _drink->getSegundo()){EEPROM.write(address, _drink->getSegundo());}
   address += sizeof(byte);
-  EEPROM.write(address, (byte)((_drink->getVolumeMl()) >> 8));
+  if(EEPROM.read(address) != (byte)((_drink->getVolumeMl()) >> 8)){EEPROM.write(address, (byte)((_drink->getVolumeMl()) >> 8));}
   address += sizeof(byte);
-  EEPROM.write(address, (byte)(_drink->getVolumeMl()));
+  if(EEPROM.read(address) != (byte)(_drink->getVolumeMl())){EEPROM.write(address, (byte)(_drink->getVolumeMl()));}
   address += sizeof(byte);
-  EEPROM.write(address, (_drink->getTipoSinal()));
+  if(EEPROM.read(address) != (_drink->getTipoSinal())){EEPROM.write(address, (_drink->getTipoSinal()));}
   address += sizeof(byte);
-  EEPROM.write(address, (byte)((_drink->getSinal()) >> 8));
+  if(EEPROM.read(address) != (byte)((_drink->getSinal()) >> 8)){EEPROM.write(address, (byte)((_drink->getSinal()) >> 8));}
   address += sizeof(byte);
-  EEPROM.write(address, (byte)(_drink->getSinal()));
+  if(EEPROM.read(address) != (byte)(_drink->getSinal())){EEPROM.write(address, (byte)(_drink->getSinal()));}
+  delay(1);
   EEPROM.end();
 }
 
-
-byte Memory::getFilledAddressFromBeginScan() {
+//correto
+byte Memory::getLastUsedPositionFromBeginScan(){
   EEPROM.begin(memorySize);
-  byte readByte;
+  byte readByteAnterior = 0;
+  byte readByteAtual = 128;
+  if( (EEPROM.read(dataMemoryBegin+2) > 127) && EEPROM.read(dataMemoryEnd+1-_drinkSize+2) < 128 ){
+      Serial.print("Last Used Position From Begin Scan Address: ");
+      Serial.println(255);
+      return 255; 
+  }
   for (int address = dataMemoryBegin ; address <= dataMemoryEnd; address += _drinkSize) {
-    readByte = EEPROM.read(address);
-    if (readByte < 128 || (readByte + 1) < 128 || (readByte + 2) < 128 || (readByte + 4) < 128 || (readByte + 5) < 128) {
-      Serial.print("\nBegin Scan Address: ");
-      Serial.println(1 + (address - dataMemoryBegin) / 12);
-      return 1 + (address - dataMemoryBegin) / 12;
+    readByteAnterior = readByteAtual;
+    readByteAtual = EEPROM.read(address+2);
+    //if (/*readByte < 128 || (readByte + 1) < 128 ||*/ (readByte + 2) < 128 /*|| (readByte + 4) < 128 || (readByte + 5) < 128*/) {
+    if( (readByteAtual > 127) && (readByteAnterior < 128) ){
+      Serial.print("Last Used Position From Begin Scan Address: ");
+      Serial.println((address - dataMemoryBegin) / 12);
+      return (address - dataMemoryBegin) / 12;
     }
     delay(1);
-  }
+  }  
   EEPROM.end();
 }
-
-byte Memory::getFilledAddressFromEndScan() {
+byte Memory::getLastUsedPositionFromEndScan(){
   EEPROM.begin(memorySize);
-  byte readByte;
-
-//  int teste = dataMemoryEnd;
-//  teste -= _drinkSize;
-//  teste -= _drinkSize;
-
+  byte readByteAnterior = 0;
+  byte readByteAtual = 128;
+  if( (EEPROM.read(dataMemoryBegin+2) < 128) && EEPROM.read(dataMemoryEnd+1-_drinkSize+2) > 127 ){
+      Serial.print("Last Used Position From End Scan Address: ");
+      Serial.println(1);
+      return 1; 
+  }
 
   for (int address = 1 + dataMemoryEnd - _drinkSize; address >= dataMemoryBegin; address = address - _drinkSize) {
-    readByte = EEPROM.read(address);
-//        Serial.print("address: "); Serial.print(address);
-//        Serial.print(" (>=) dataMemoryBegin: "); Serial.println(dataMemoryBegin);
-//        Serial.print(" // address : "); Serial.print(address); Serial.print(" Value: "); Serial.print(EEPROM.read(address),DEC); Serial.print("-"); Serial.print(Serial.println(EEPROM.read(address),BIN));
-//        Serial.print(" // (address + 1) : "); Serial.print((address + 1)); Serial.print(" Value: "); Serial.print(EEPROM.read(address+1),DEC); Serial.print("-"); Serial.print(Serial.println(EEPROM.read(address+1),BIN));
-//        Serial.print(" // (address + 2) : "); Serial.print((address + 2)); Serial.print(" Value: "); Serial.print(EEPROM.read(address+2),DEC); Serial.print("-"); Serial.print(Serial.println(EEPROM.read(address+2),BIN));
-//        Serial.print(" // (address + 4) : "); Serial.print((address + 4)); Serial.print(" Value: "); Serial.print(EEPROM.read(address+4),DEC); Serial.print("-"); Serial.print(Serial.println(EEPROM.read(address+4),BIN));
-//        Serial.print(" // (address + 5) : "); Serial.print((address + 5)); Serial.print(" Value: "); Serial.print(EEPROM.read(address+5),DEC); Serial.print("-"); Serial.print(Serial.println(EEPROM.read(address+5),BIN));
-//    
-    if (readByte < 128 || (readByte + 1) < 128 || (readByte + 2) < 128 || (readByte + 4) < 128 || (readByte + 5) < 128) {
-      Serial.print("End Scan Position: ");
-      Serial.println(1 + (address - dataMemoryBegin) / 12);
-//            Serial.print("\nEnd Scan Address: ");
-//            Serial.print(address );
-//            Serial.print("\n End Scan Address Value: ");
-//            Serial.print(EEPROM.read(address),DEC);
-//            Serial.print("-");
-//            Serial.print(Serial.println((byte)EEPROM.read(address),DEC));
-//            Serial.println("fim");
-      return 1 + ((address - dataMemoryBegin) / 12);
+    readByteAnterior = readByteAtual;
+    readByteAtual = EEPROM.read(address+2);
+    //if (/*readByte < 128 || (readByte + 1) < 128 ||*/ (readByte + 2) < 128 /*|| (readByte + 4) < 128 || (readByte + 5) < 128*/) {
+    if( (readByteAtual > 127) && (readByteAnterior < 128) ){
+      Serial.print("Last Used Position From End Scan Address: ");
+      Serial.println(2+((address - dataMemoryBegin) / 12));
+      return 2+((address - dataMemoryBegin) / 12);
     }
     delay(1);
-  }
-  EEPROM.end();
+  }  
+  EEPROM.end();  
 }
-byte Memory::getFirstFilledAddressFromEndScan() {
-  EEPROM.begin(memorySize);
-  byte readByte;
+//// fim dos novos
 
-  for (int address = 1 + dataMemoryEnd - _drinkSize; address >= dataMemoryBegin; address = address - _drinkSize) {
-    readByte = EEPROM.read(address);
-    if (readByte > 127 || (readByte + 1) > 127 || (readByte + 2) > 127 || (readByte + 4) > 127 || (readByte + 5) > 127) {
-      Serial.print("First Filled End Scan Position: ");
-      Serial.println(1 + (address - dataMemoryBegin) / 12);
-      return 1+1 + ((address - dataMemoryBegin) / 12);
-    }
-    delay(1);
-    EEPROM.end();
+
+byte Memory::getNextPositionToWriteDrink(){
+  if(getLastUsedPositionFromBeginScan() == 255){
+    return 1;
+  } else{
+    return getLastUsedPositionFromBeginScan()+1;
   }
 }
-byte Memory::whatIsNextDrinkPositionToBeSent() {
-  EEPROM.begin(memorySize);
-  byte nextDrinkPositionToBeSent = 0;
-  
-  if ((getFilledAddressFromBeginScan() == 1) && (getFilledAddressFromEndScan() == 255)) {
-    Serial.print("Begin > End --> Enviado posicao mais baixa partindo do final da lista que conten valor menor que 128");
-    return getFirstFilledAddressFromEndScan(); // se conseguir enviar apagar essa mesma posicao
-  } else if (getFilledAddressFromBeginScan() < getFilledAddressFromEndScan()) {
-    Serial.print("Begin < End --> Enviada primeira posicao com valor menor que 128 do comeco das lista de posicoes");
-    return getFilledAddressFromBeginScan(); // se conseguir enviar apagar essa mesma posicao
-  } else {
-    Serial.print("Begin == End --> Nada para enviar");
-    return 0;
+byte Memory::getNextPositionToCleanDrink(){
+  if(getLastUsedPositionFromBeginScan() == getLastUsedPositionFromEndScan()){
+    return 0; // sem posicao para limpar
+  }else{
+    return getLastUsedPositionFromEndScan();
   }
-  //
-  //  for(int address = dataMemoryBegin+_drinkSize; address <= dataMemoryEnd; address = address*_drinkSize){
-  //      if(((byte)EEPROM.read(address))>){
-  //
-  //      }
-  //
-  //      if(value<100){Serial.print(" ");} if(value<10){Serial.print(" ");}
-  //      Serial.print(value, DEC);
-  //      if((address+1)%25 == 0){
-  //        Serial.print("-(address=");if(address<100){Serial.print(" ");} if(address<10){Serial.print(" ");}Serial.print(address);Serial.print(")");
-  //        Serial.println("");
-  //        if(address != dataMemoryEnd){Serial.print("(address=");if((address+1)<100){Serial.print(" ");} if((address+1)<10){Serial.print(" ");}Serial.print(address+1);Serial.print(")-");}
-  //        delay(1);
-  //      }else{
-  //        Serial.print("-");
-  //      }
-  //  }
-  return nextDrinkPositionToBeSent;
-  EEPROM.end();
 }
+byte Memory::getNextPositionToReadDrink(){
+  if(getLastUsedPositionFromBeginScan() == getLastUsedPositionFromEndScan()){
+    return 0; // sem posicao para limpar
+  } else if(getLastUsedPositionFromEndScan() == 255){
+    return 1;
+  }else{
+    return getLastUsedPositionFromEndScan()+1;
+  }  
+}
+
+
+//byte Memory::getFilledAddressFromBeginScan() {
+//  EEPROM.begin(memorySize);
+//  byte readByte;
+//  for (int address = dataMemoryBegin ; address <= dataMemoryEnd; address += _drinkSize) {
+//    readByte = EEPROM.read(address);
+//    if (/*readByte < 128 || (readByte + 1) < 128 ||*/ (readByte + 2) < 128 /*|| (readByte + 4) < 128 || (readByte + 5) < 128*/) {
+//      Serial.print("\nBegin Scan Address: ");
+//      Serial.println(1 + (address - dataMemoryBegin) / 12);
+//      return 1 + (address - dataMemoryBegin) / 12;
+//    }
+//    delay(1);
+//  }
+//  EEPROM.end();
+//}
+//
+//byte Memory::getFilledAddressFromEndScan() {
+//  EEPROM.begin(memorySize);
+//  byte readByte;
+//
+////  int teste = dataMemoryEnd;
+////  teste -= _drinkSize;
+////  teste -= _drinkSize;
+//
+//
+//  for (int address = 1 + dataMemoryEnd - _drinkSize; address >= dataMemoryBegin; address = address - _drinkSize) {
+//    readByte = EEPROM.read(address);
+////        Serial.print("address: "); Serial.print(address);
+////        Serial.print(" (>=) dataMemoryBegin: "); Serial.println(dataMemoryBegin);
+////        Serial.print(" // address : "); Serial.print(address); Serial.print(" Value: "); Serial.print(EEPROM.read(address),DEC); Serial.print("-"); Serial.print(Serial.println(EEPROM.read(address),BIN));
+////        Serial.print(" // (address + 1) : "); Serial.print((address + 1)); Serial.print(" Value: "); Serial.print(EEPROM.read(address+1),DEC); Serial.print("-"); Serial.print(Serial.println(EEPROM.read(address+1),BIN));
+////        Serial.print(" // (address + 2) : "); Serial.print((address + 2)); Serial.print(" Value: "); Serial.print(EEPROM.read(address+2),DEC); Serial.print("-"); Serial.print(Serial.println(EEPROM.read(address+2),BIN));
+////        Serial.print(" // (address + 4) : "); Serial.print((address + 4)); Serial.print(" Value: "); Serial.print(EEPROM.read(address+4),DEC); Serial.print("-"); Serial.print(Serial.println(EEPROM.read(address+4),BIN));
+////        Serial.print(" // (address + 5) : "); Serial.print((address + 5)); Serial.print(" Value: "); Serial.print(EEPROM.read(address+5),DEC); Serial.print("-"); Serial.print(Serial.println(EEPROM.read(address+5),BIN));
+////    
+//    if (/*readByte < 128 || (readByte + 1) < 128 ||*/ (readByte + 2) < 128 /*|| (readByte + 4) < 128 || (readByte + 5) < 128*/) {
+//      Serial.print("End Scan Position: ");
+//      Serial.println(1 + (address - dataMemoryBegin) / 12);
+////            Serial.print("\nEnd Scan Address: ");
+////            Serial.print(address );
+////            Serial.print("\n End Scan Address Value: ");
+////            Serial.print(EEPROM.read(address),DEC);
+////            Serial.print("-");
+////            Serial.print(Serial.println((byte)EEPROM.read(address),DEC));
+////            Serial.println("fim");
+//      return 1 + ((address - dataMemoryBegin) / 12);
+//    }
+//    delay(1);
+//  }
+//  EEPROM.end();
+//}
+//byte Memory::getFirstFilledAddressFromEndScan() {
+//  EEPROM.begin(memorySize);
+//  byte readByte;
+//
+//  for (int address = 1 + dataMemoryEnd - _drinkSize; address >= dataMemoryBegin; address = address - _drinkSize) {
+//    readByte = EEPROM.read(address);
+//    if (readByte > 127 || (readByte + 1) > 127 || (readByte + 2) > 127 || (readByte + 4) > 127 || (readByte + 5) > 127) {
+//      Serial.print("First Filled End Scan Position: ");
+//      Serial.println(1 + (address - dataMemoryBegin) / 12);
+//      return 1+1 + ((address - dataMemoryBegin) / 12);
+//    }
+//    delay(1);
+//    EEPROM.end();
+//  }
+//}
+//byte Memory::whatIsNextDrinkPositionToBeSent() {
+//  EEPROM.begin(memorySize);
+//  byte nextDrinkPositionToBeSent = 0;
+//  
+//  if ((getFilledAddressFromBeginScan() == 1) && (getFilledAddressFromEndScan() == 255)) {
+//    Serial.print("Begin > End --> Enviado posicao mais baixa partindo do final da lista que conten valor menor que 128");
+//    return getFirstFilledAddressFromEndScan(); // se conseguir enviar apagar essa mesma posicao
+//  } else if (getFilledAddressFromBeginScan() < getFilledAddressFromEndScan()) {
+//    Serial.print("Begin < End --> Enviada primeira posicao com valor menor que 128 do comeco das lista de posicoes");
+//    return getFilledAddressFromBeginScan(); // se conseguir enviar apagar essa mesma posicao
+//  } else {
+//    Serial.print("Begin == End --> Nada para enviar");
+//    return 0;
+//  }
+//  //
+//  //  for(int address = dataMemoryBegin+_drinkSize; address <= dataMemoryEnd; address = address*_drinkSize){
+//  //      if(((byte)EEPROM.read(address))>){
+//  //
+//  //      }
+//  //
+//  //      if(value<100){Serial.print(" ");} if(value<10){Serial.print(" ");}
+//  //      Serial.print(value, DEC);
+//  //      if((address+1)%25 == 0){
+//  //        Serial.print("-(address=");if(address<100){Serial.print(" ");} if(address<10){Serial.print(" ");}Serial.print(address);Serial.print(")");
+//  //        Serial.println("");
+//  //        if(address != dataMemoryEnd){Serial.print("(address=");if((address+1)<100){Serial.print(" ");} if((address+1)<10){Serial.print(" ");}Serial.print(address+1);Serial.print(")-");}
+//  //        delay(1);
+//  //      }else{
+//  //        Serial.print("-");
+//  //      }
+//  //  }
+//  return nextDrinkPositionToBeSent;
+//  EEPROM.end();
+//}
 
 void Memory::print() {
   Serial.println("\nMemory\n");
@@ -409,31 +485,34 @@ void Memory::clearMemory() {
 
 void Memory::clearDataMemory() {
   EEPROM.begin(memorySize);
-  Serial.print("Clean Data Memory");
+  Serial.println("Clean Data Memory");
   for (int address = dataMemoryBegin; address <= dataMemoryEnd; address++) {
     if (EEPROM.read(address) != 255) {
       EEPROM.write(address, 255); delay(1);
     }
   }
-  byte firstByte = 0;
-  EEPROM.write(dataMemoryBegin, firstByte);
+//  byte firstByte = 0;
+//  EEPROM.write(dataMemoryBegin, firstByte);
   EEPROM.end();
 }
 
 void Memory::clearDrinkMemoryAtPosition(byte position) {
   EEPROM.begin(memorySize);
-  for (int address = dataMemoryBegin + (position - 1) * _drinkSize ; address < dataMemoryBegin + (position) * _drinkSize ; address++) {
-    EEPROM.write(address, 128);
+  if(position >0 && position < 256){
+//    for (int address = dataMemoryBegin + (position - 1) * _drinkSize ; address < dataMemoryBegin + (position) * _drinkSize ; address++) {
+//      EEPROM.write(address, 128);
+//    }    
+    EEPROM.write(dataMemoryBegin + (position - 1) * _drinkSize + 2, 128);
   }
   EEPROM.end();
 }
 
 
-void Memory::teste() {
-  _drink->print();
-  int ano = _drink->getAno();
-  Serial.print("Ano:"); Serial.println(ano);
-}
+//void Memory::teste() {
+//  _drink->print();
+//  int ano = _drink->getAno();
+//  Serial.print("Ano:"); Serial.println(ano);
+//}
 
 
 

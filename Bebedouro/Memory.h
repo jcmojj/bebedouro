@@ -33,15 +33,15 @@
 class Memory{
   public:
     Memory(int size, Drink &drink, byte drinkSize);
-    byte whatIsNextDrinkPositionToBeSent();
-    byte confirmDrinkWasSend();
+//    byte whatIsNextDrinkPositionToBeSent();
+//    byte confirmDrinkWasSend();
     void clearMemory();
     void clearDataMemory();
     void clearDrinkMemoryAtPosition(byte position);
 
-    byte getFilledAddressFromBeginScan();
-    byte getFilledAddressFromEndScan();
-    byte getFirstFilledAddressFromEndScan();
+//    byte getFilledAddressFromBeginScan();
+//    byte getFilledAddressFromEndScan();
+//    byte getFirstFilledAddressFromEndScan();
     
     void print();
     void printData();
@@ -49,10 +49,16 @@ class Memory{
     void getDrinkFromPosition(byte position);
     void setDrinkAtPosition(byte position);
 
-    void teste2();
+//    void teste2();
 
+    byte getLastUsedPositionFromBeginScan();
+    byte getLastUsedPositionFromEndScan();
+
+    byte getNextPositionToWriteDrink();
+    byte getNextPositionToCleanDrink();
+    byte getNextPositionToReadDrink();
     
-    void teste();
+//    void teste();
 //    boolean checkWaterToSend();
 //    void setMililitroAgua(byte dia, byte mes, byte ano2Dig, byte hora, byte minuto, byte mililitroAgua, byte sinalPet); // 7 bytes
 //    byte getDia(byte posicao);
@@ -74,6 +80,7 @@ class Memory{
     Drink *_drink;
     int _size;
     byte _drinkSize;
+
   
 };
 
