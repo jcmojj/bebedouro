@@ -4,6 +4,7 @@
 #include "Arduino.h"
 #include "Drink.h"
 #include <EEPROM.h>
+#include <ArduinoJson.h>
 
 #define serialNumber 50
 #define ssidName 50
@@ -32,7 +33,14 @@
 
 class Memory{
   public:
-    Memory(int size, Drink &drink, byte drinkSize);
+//    Memory(int size, Drink &drink, byte drinkSize); //Memory::Memory(int size, Drink &drink, byte drinkSize) {//Memory memory = Memory(4095, drink, drink.getSize());
+//    Memory(Drink &drink, byte drinkSize, JsonObject& jsonDrink); //Memory::Memory(Drink &drink, byte drinkSize, JsonObject& jsonDrink); Memory memory = Memory(drink, drink.getSize(),jsonDrink);
+    Memory(Drink &drink, byte drinkSize);
+    void saveDrinkAtMemory(); // fazer lembrando de apagar memoria caso esteja cheia
+    void lastDrinkWasSentToServerWithSucess(); //fazer
+    void getNextDrinkToSendToServer(); //fazer
+    //lembrar de usar o ano ou o tipo de dado para alternar confirmacao de posicao --> trabalhoso --> por ultimo
+    
     void clearMemory();
     void clearDataMemory();
     void clearDrinkMemoryAtPosition(byte position);
@@ -49,13 +57,19 @@ class Memory{
     byte getNextPositionToWriteDrink();
     byte getNextPositionToCleanDrink();
     byte getNextPositionToReadDrink();
-    
+
+    void getSsidName(char* name);
+    void setSsidName(char* name);
+
+    void getSsidPassword(char* password);
+    void setSsidPassword(char* password);
 
   private:
     int getNextPositionAvailable();
     Drink *_drink;
     int _size;
     byte _drinkSize;
+//    JsonObject& _jsonDrink;
 
   
 };

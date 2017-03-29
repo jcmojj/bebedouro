@@ -1,7 +1,7 @@
 #include "Drink.h"
 
 Drink::Drink(){
-  Serial.begin(9600);
+  Serial.begin(115200);
   _dia = 0;
   _mes = 0;
   _ano = 0;
