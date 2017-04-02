@@ -10,7 +10,7 @@ class Drink{
     void setEmpty();
     boolean isEmpty();
     int getSize(); // return the value of bytes of one drink object
-    void setValue(byte dia, byte mes, int ano, byte hora, byte minuto, byte segundo, int volumeMl,  char tipoSinal, int sinal); // 12 bytes
+    void setValue(byte dia, byte mes, int ano, byte hora, byte minuto, byte segundo, int volumeMl, char tipoSinal, int sinal, byte positionToSendToServer, byte positionReceivedByServer); // 12 bytes
     byte getDia();
     byte getMes();
     int getAno();
@@ -20,6 +20,8 @@ class Drink{
     int getVolumeMl();
     char getTipoSinal();
     int getSinal();
+    byte getPositionToSendToServer();
+    byte getPositionReceivedByServer();
     
     void setDia(byte dia);
     void setMes(byte mes);
@@ -30,6 +32,8 @@ class Drink{
     void setVolumeMl(int volumeMl);
     void setTipoSinal(char tipoSinal);
     void setSinal(int sinal);
+    void setPositionToSendToServer(byte position);
+    void setPositionReceivedByServer(byte position);
     
     void print();
 
@@ -42,8 +46,10 @@ class Drink{
     byte _segundo;
     int _volumeMl;
     char _tipoSinal;
-    int _sinal;    
-  
+    int _sinal;
+    byte _position;    
+    byte _positionReceivedByServer;
+    byte _positionToSendToServer;
 };
 
 #endif

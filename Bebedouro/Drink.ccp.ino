@@ -24,6 +24,8 @@ void Drink::setEmpty(){
   _volumeMl = 0;
   _tipoSinal = 0;
   _sinal = 0;
+  _positionToSendToServer = 0;
+  _positionReceivedByServer = 0;
 }
 
 boolean Drink::isEmpty(){
@@ -33,7 +35,7 @@ boolean Drink::isEmpty(){
     return false;
   }  
 }
-void Drink::setValue(byte dia, byte mes, int ano, byte hora, byte minuto, byte segundo, int volumeMl, char tipoSinal, int sinal){
+void Drink::setValue(byte dia, byte mes, int ano, byte hora, byte minuto, byte segundo, int volumeMl, char tipoSinal, int sinal, byte positionToSendToServer, byte positionReceivedByServer){
   _dia = dia;
   _mes = mes;
   _ano = ano;
@@ -43,6 +45,22 @@ void Drink::setValue(byte dia, byte mes, int ano, byte hora, byte minuto, byte s
   _volumeMl = volumeMl;
   _tipoSinal = tipoSinal;
   _sinal = sinal; 
+  _positionToSendToServer = positionToSendToServer;
+  _positionReceivedByServer = positionReceivedByServer;
+}
+
+byte Drink::getPositionToSendToServer(){
+  return _positionToSendToServer;
+}
+void Drink::setPositionToSendToServer(byte position){
+  _positionToSendToServer = position;
+}
+
+byte Drink::getPositionReceivedByServer(){
+  return _positionReceivedByServer;
+}
+void Drink::setPositionReceivedByServer(byte position){
+  _positionReceivedByServer = position;
 }
 
 byte Drink::getDia(){

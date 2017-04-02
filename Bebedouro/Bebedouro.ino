@@ -26,7 +26,7 @@ Drink drink = Drink();
 //Memory memory = Memory(4095, drink, drink.getSize());
 Memory memory = Memory(drink, drink.getSize());
 //  Memory memory = Memory(drink, drink.getSize(),jsonDrink);
-Internet internet = Internet(webSocket,memory,drink);
+Internet internet = Internet(memory,drink);
 
 //int i = 0;
 
@@ -85,18 +85,23 @@ void setup() {
   Serial.println("local ip");
   Serial.println(WiFi.localIP());
   /* ----------------------- SETUP - WiFiManager ----------------------- */
-  
-//  memory.clearDataMemory();
-//  for(byte mes = 1; mes<11 ; mes++){
-//    for(byte dia = 1; dia<30 ; dia ++){
-//      drink.setValue(dia,mes,1984,9,50,30,57,'c',111);
-//      memory.saveDrinkAtMemory();
-//    }
-//  }
+
+//  zerando e preenchendo a memoria
+  memory.clearDataMemory();
+  for(byte mes = 1; mes<11 ; mes++){
+    for(byte dia = 1; dia<30 ; dia ++){
+      drink.setValue(dia,mes,1984,9,50,30,57,'c',111,0,0);
+      memory.saveDrinkAtMemory();
+    }
+  }
+  Serial.println("Memoria Limpa");
 
   Serial.println("Fim do WiFi Manager");
 //     webSocket.begin("ws://localhost:8080/EchoChamber/echo", 80);
-     webSocket.begin("echo.websocket.org", 80, "/echo","arduino");
+//     webSocket.begin("echo.websocket.org", 80, "/echo","arduino");
+//     webSocket.begin("echo.websocket.org", 80, "/echo","arduino");
+       webSocket.begin("websocket-echo.herokuapp.com", 80, "/","arduino");
+//     webSocket.beginSSL("http://echo.herokuapp.com/", 80, "/","arduino");
      webSocket.onEvent(webSocketEvent);
 
      Serial.print("Fim WebSocket");
@@ -104,7 +109,9 @@ void setup() {
 //  memory.setUserEmail(emailTeste);
 
   memory.print();
-//  memory.printData();
+//  memory.clearDataMemory();
+  memory.printData();
+
 //ticker.attach(10, internetcheck);
 }
   /* ------------------------------------------------------------------- */
@@ -118,10 +125,10 @@ void setup() {
   /* -----------------------         LOOP        ----------------------- */
   /* ------------------------------------------------------------------- */
 void loop() {
-
-  webSocket.loop();
-//  internet.check();
-
+  internet.confirmDrinkWasSuccessfullySent(); // anula o valor do position received // confirma o valor 40  e zera o 
+  webSocket.loop(); // coloca um valor no position receive // verifica que recebeu o valor position = 40
+  internet.checkDrinkToSend(); // compara o valor e so envia se o valor no position received for zero // nao envia nada
+  
 
 
   
@@ -182,16 +189,18 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t lenght) {
         case WStype_CONNECTED:
             {
                 Serial.printf("[WSc] Connected to url: %s\n",  payload);
-                internet.connect();
+                
         
           // send message to server when Connected
-        webSocket.sendTXT("Connected");
+        webSocket.sendTXT("{\"Connected\":1}");
 //        i=1;
             }
             break;
         case WStype_TEXT:
             Serial.printf("[WSc] get text: %s\n", payload);
+            internet.parseJson(payload);
             internet.getText();
+            //logica parar parsear info do server -- se voltar drinkpositionreceived x// ai ativo o posicaoRecebida
       // send message to server
       // webSocket.sendTXT("message here");
             break;

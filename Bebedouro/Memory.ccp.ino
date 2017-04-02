@@ -31,10 +31,15 @@ void Memory::saveDrinkAtMemory(){
   setDrinkAtPosition(nextPositionToSave);
 }
 void Memory::lastDrinkWasSentToServerWithSucess(){
-  clearDrinkMemoryAtPosition(getNextPositionToCleanDrink()); 
+  byte nextPositionToCleanDrink = getNextPositionToCleanDrink();
+  Serial.print("- nextPositionToCleanDrink: "); Serial.println(nextPositionToCleanDrink);
+  clearDrinkMemoryAtPosition(nextPositionToCleanDrink); 
 }
-void Memory::getNextDrinkToSendToServer(){
-  getDrinkFromPosition(getNextPositionToReadDrink());
+byte Memory::getNextDrinkToSendToServer(){
+  byte positionToSendToServer = getNextPositionToReadDrink();
+  getDrinkFromPosition(positionToSendToServer);
+  _drink->setPositionToSendToServer(positionToSendToServer);
+  return positionToSendToServer;
 }
 
 void Memory::printDrinkFromPosition(byte position) {
@@ -74,7 +79,7 @@ void Memory::getDrinkFromPosition(byte position) {
   address += sizeof(byte);
   sinal += ((int)(EEPROM.read(address)));
   _drink->setSinal(sinal);
-  delay(1);
+  yield();
   EEPROM.end();
 }
 
@@ -105,7 +110,7 @@ void Memory::setDrinkAtPosition(byte position) {
   if(EEPROM.read(address) != (byte)((_drink->getSinal()) >> 8)){EEPROM.write(address, (byte)((_drink->getSinal()) >> 8));}
   address += sizeof(byte);
   if(EEPROM.read(address) != (byte)(_drink->getSinal())){EEPROM.write(address, (byte)(_drink->getSinal()));}
-  delay(1);
+  yield();
   EEPROM.end();
 }
 
@@ -130,7 +135,7 @@ byte Memory::getLastUsedPositionFromBeginScan(){
       //Serial.println((address - dataMemoryBegin) / 12);
       return (address - dataMemoryBegin) / 12;
     }
-    delay(1);
+    yield();
   }  
   EEPROM.end();
 }
@@ -155,7 +160,7 @@ byte Memory::getLastUsedPositionFromEndScan(){
       //Serial.println(2+((address - dataMemoryBegin) / 12));
       return 2+((address - dataMemoryBegin) / 12);
     }
-    delay(1);
+    yield();
   }  
   EEPROM.end();  
 }
@@ -201,7 +206,7 @@ void Memory::print() {
 
   Serial.print("Water Memory Size ");     Serial.println(_drinkSize);
 
-  delay(1);
+  yield();
   EEPROM.begin(memorySize);
   uint8_t value = 0;
 
@@ -237,7 +242,7 @@ void Memory::print() {
         } Serial.print(address + 1);
         Serial.print(")-");
       }
-      delay(1);
+      yield();
     } else {
       Serial.print("-");
     }
@@ -276,7 +281,7 @@ void Memory::print() {
         } Serial.print(address + 1);
         Serial.print(")-");
       }
-      delay(1);
+      yield();
     } else {
       Serial.print("-");
     }
@@ -314,7 +319,7 @@ void Memory::print() {
         } Serial.print(address + 1);
         Serial.print(")-");
       }
-      delay(1);
+      yield();
     } else {
       Serial.print("-");
     }
@@ -352,7 +357,7 @@ void Memory::print() {
         } Serial.print(address + 1);
         Serial.print(")-");
       }
-      delay(1);
+      yield();
     } else {
       Serial.print("-");
     }
@@ -403,7 +408,7 @@ void Memory::printData() {
           Serial.print(" ");
         } Serial.print(2 + (address - dataMemoryBegin) / _drinkSize); Serial.print(")");
       }
-      delay(1);
+      yield();
     } else {
       Serial.print("-");
     }
@@ -419,7 +424,7 @@ void Memory::clearMemory() {
   for (int address = serialNumberBegin; address <= dataMemoryEnd; address++) {
     yield();
     if (EEPROM.read(address) != 255) {
-      EEPROM.write(address, 255); delay(1);
+      EEPROM.write(address, 255); yield();
     }
   }
   EEPROM.end();
@@ -432,7 +437,7 @@ void Memory::clearDataMemory() {
   for (int address = dataMemoryBegin; address <= dataMemoryEnd; address++) {
     yield();
     if (EEPROM.read(address) != 255) {
-      EEPROM.write(address, 255); delay(1);
+      EEPROM.write(address, 255); yield();
     }
   }
   byte firstByte = 0;
@@ -513,7 +518,7 @@ byte Memory::getUserEmailSize(){
 void Memory::setUserEmail(const char email[]){
   yield();
   EEPROM.begin(memorySize);
-  Serial.print("Dentro setter: "); Serial.println(email);
+//  Serial.print("Dentro setter: "); Serial.println(email);
   int i = 0;
   do{
     yield();

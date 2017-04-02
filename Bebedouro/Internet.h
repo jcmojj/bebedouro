@@ -1,6 +1,10 @@
 #ifndef Internet_h
 #define Internet_h
 
+#define checkDrinkToSendInterval 5000 //16382 // 16,3s
+unsigned long drinkToSendTime = 0;
+#define sendCounterLimit  50
+
 #include "Arduino.h"
 #include <ESP8266WiFiMulti.h>   // WebSocket 
 #include <WebSocketsClient.h>   // WebSocket 
@@ -11,19 +15,29 @@
 
 class Internet{
   public:
-    Internet(WebSocketsClient &webSocket,Memory &memory,Drink &drink);
+    Internet(Memory &memory,Drink &drink);
     void connect();
     void disconnect();
+    bool isConnected();
     void getText();
     void getBin();
-    void sendDrink(byte drink);
-    void check();
+    void parseJson(uint8_t * payload);
+    void sendDrink();
+    void checkDrinkToSend();
+    void confirmDrinkWasSuccessfullySent();
+    byte getSendCounter();
+    byte addSendCounter();
+    byte clearSendCounter();
+    bool checkSendCounter();
 
   private:
     WebSocketsClient *_webSocket;
     Memory *_memory;
     Drink *_drink;
     bool _isConnected;
+    unsigned long _hashForSentMessage;
+    unsigned long _hashForReceivedMessage;
+    byte _sendCounter;
   
 };
 

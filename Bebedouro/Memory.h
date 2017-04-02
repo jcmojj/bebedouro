@@ -35,7 +35,7 @@ class Memory{
     Memory(Drink &drink, byte drinkSize);
     void saveDrinkAtMemory(); // fazer lembrando de apagar memoria caso esteja cheia
     void lastDrinkWasSentToServerWithSucess(); //fazer
-    void getNextDrinkToSendToServer(); //fazer
+    byte getNextDrinkToSendToServer(); //fazer
     //lembrar de usar o ano ou o tipo de dado para alternar confirmacao de posicao --> trabalhoso --> por ultimo
     
     void clearMemory();
