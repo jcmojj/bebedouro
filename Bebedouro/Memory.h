@@ -4,7 +4,6 @@
 #include "Arduino.h"
 #include "Drink.h"
 #include <EEPROM.h>
-#include <ArduinoJson.h>
 
 #define serialNumber 50
 #define ssidName 50
@@ -33,8 +32,6 @@
 
 class Memory{
   public:
-//    Memory(int size, Drink &drink, byte drinkSize); //Memory::Memory(int size, Drink &drink, byte drinkSize) {//Memory memory = Memory(4095, drink, drink.getSize());
-//    Memory(Drink &drink, byte drinkSize, JsonObject& jsonDrink); //Memory::Memory(Drink &drink, byte drinkSize, JsonObject& jsonDrink); Memory memory = Memory(drink, drink.getSize(),jsonDrink);
     Memory(Drink &drink, byte drinkSize);
     void saveDrinkAtMemory(); // fazer lembrando de apagar memoria caso esteja cheia
     void lastDrinkWasSentToServerWithSucess(); //fazer
@@ -57,6 +54,10 @@ class Memory{
     byte getNextPositionToWriteDrink();
     byte getNextPositionToCleanDrink();
     byte getNextPositionToReadDrink();
+
+    void getUserEmail(char email[]);
+    void setUserEmail(const char email[]);
+    byte getUserEmailSize();  
 
     void getSsidName(char* name);
     void setSsidName(char* name);

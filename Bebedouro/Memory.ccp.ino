@@ -8,7 +8,7 @@
 //  _drinkSize = drinkSize;
 //}
 Memory::Memory(Drink &drink, byte drinkSize){
-//  Serial.begin(9600);
+  Serial.begin(115200);
   _drink = &drink;
   _drinkSize = drinkSize;
   
@@ -45,6 +45,7 @@ void Memory::printDrinkFromPosition(byte position) {
 }
 
 void Memory::getDrinkFromPosition(byte position) {
+  yield();
   EEPROM.begin(memorySize);
   int address =  dataMemoryBegin + _drinkSize * (position - 1);
   _drink->setDia((byte)EEPROM.read(address));
@@ -78,6 +79,7 @@ void Memory::getDrinkFromPosition(byte position) {
 }
 
 void Memory::setDrinkAtPosition(byte position) {
+  yield();
   EEPROM.begin(memorySize);
   int address =  dataMemoryBegin + _drinkSize * (position - 1);
   if(EEPROM.read(address) != _drink->getDia()){EEPROM.write(address, _drink->getDia());}
@@ -109,6 +111,7 @@ void Memory::setDrinkAtPosition(byte position) {
 
 //correto
 byte Memory::getLastUsedPositionFromBeginScan(){
+  yield();
   EEPROM.begin(memorySize);
   byte readByteAnterior = 0;
   byte readByteAtual = 128;
@@ -118,6 +121,7 @@ byte Memory::getLastUsedPositionFromBeginScan(){
       return 255; 
   }
   for (int address = dataMemoryBegin ; address <= dataMemoryEnd; address += _drinkSize) {
+    yield();
     readByteAnterior = readByteAtual;
     readByteAtual = EEPROM.read(address+2);
     //if (/*readByte < 128 || (readByte + 1) < 128 ||*/ (readByte + 2) < 128 /*|| (readByte + 4) < 128 || (readByte + 5) < 128*/) {
@@ -131,6 +135,7 @@ byte Memory::getLastUsedPositionFromBeginScan(){
   EEPROM.end();
 }
 byte Memory::getLastUsedPositionFromEndScan(){
+  yield();
   EEPROM.begin(memorySize);
   byte readByteAnterior = 0;
   byte readByteAtual = 128;
@@ -141,6 +146,7 @@ byte Memory::getLastUsedPositionFromEndScan(){
   }
 
   for (int address = 1 + dataMemoryEnd - _drinkSize; address >= dataMemoryBegin; address = address - _drinkSize) {
+    yield();
     readByteAnterior = readByteAtual;
     readByteAtual = EEPROM.read(address+2);
     //if (/*readByte < 128 || (readByte + 1) < 128 ||*/ (readByte + 2) < 128 /*|| (readByte + 4) < 128 || (readByte + 5) < 128*/) {
@@ -186,7 +192,7 @@ void Memory::print() {
   Serial.printf("Flash chip size (in bytes): %d\n", ESP.getFlashChipSize());
   Serial.printf("Flash chip speed (in Hz): %d\n", ESP.getFlashChipSpeed());
   Serial.print("Memory Total Size (EEPROM):"); Serial.println(memorySize);
-
+  yield();
   Serial.print("\nSerial Number Memory"); Serial.print(" from " );  Serial.print(serialNumberBegin);  Serial.print(" to "); Serial.println(serialNumberEnd);
   Serial.print("SSID Name Memory");       Serial.print(" from " );  Serial.print(ssidNameBegin);      Serial.print(" to "); Serial.println(ssidNameEnd);
   Serial.print("SSID Password Memory");   Serial.print(" from " );  Serial.print(ssidPasswordBegin);  Serial.print(" to "); Serial.println(ssidPasswordEnd);
@@ -207,6 +213,7 @@ void Memory::print() {
     Serial.print(" ");
   } Serial.print(serialNumberBegin); Serial.print(")-");
   for (byte address = serialNumberBegin; address <= serialNumberEnd; address++) {
+    yield();
     value = EEPROM.read(address);
     if (value < 100) {
       Serial.print(" ");
@@ -245,6 +252,7 @@ void Memory::print() {
     Serial.print(" ");
   } Serial.print(ssidNameBegin); Serial.print(")-");
   for (byte address = ssidNameBegin; address <= ssidNameEnd; address++) {
+    yield();
     value = EEPROM.read(address);
     if (value < 100) {
       Serial.print(" ");
@@ -282,6 +290,7 @@ void Memory::print() {
     Serial.print(" ");
   } Serial.print(ssidPasswordBegin); Serial.print(")-");
   for (byte address = ssidPasswordBegin; address <= ssidPasswordEnd; address++) {
+    yield();
     value = EEPROM.read(address);
     if (value < 100) {
       Serial.print(" ");
@@ -319,6 +328,7 @@ void Memory::print() {
     Serial.print(" ");
   } Serial.print(userEmailBegin); Serial.print(")-");
   for (byte address = userEmailBegin; address <= userEmailEnd; address++) {
+    yield();
     value = EEPROM.read(address);
     if (value < 100) {
       Serial.print(" ");
@@ -351,6 +361,7 @@ void Memory::print() {
 }
 
 void Memory::printData() {
+  yield();
   EEPROM.begin(memorySize);
   uint8_t value = 0;
   Serial.print("\n");
@@ -362,6 +373,7 @@ void Memory::printData() {
   } Serial.print(dataMemoryBegin); Serial.print(")");
   Serial.print("(Position=  1)");
   for (int address = dataMemoryBegin; address <= dataMemoryEnd; address++) {
+    yield();
     value = EEPROM.read(address);
     if (value < 100) {
       Serial.print(" ");
@@ -401,9 +413,11 @@ void Memory::printData() {
 }
 
 void Memory::clearMemory() {
+  yield();
   EEPROM.begin(memorySize);
   Serial.print("Clean Memory");
   for (int address = serialNumberBegin; address <= dataMemoryEnd; address++) {
+    yield();
     if (EEPROM.read(address) != 255) {
       EEPROM.write(address, 255); delay(1);
     }
@@ -412,9 +426,11 @@ void Memory::clearMemory() {
 }
 
 void Memory::clearDataMemory() {
+  yield();
   EEPROM.begin(memorySize);
   Serial.println("Clean Data Memory");
   for (int address = dataMemoryBegin; address <= dataMemoryEnd; address++) {
+    yield();
     if (EEPROM.read(address) != 255) {
       EEPROM.write(address, 255); delay(1);
     }
@@ -425,6 +441,7 @@ void Memory::clearDataMemory() {
 }
 
 void Memory::clearDrinkMemoryAtPosition(byte position) {
+  yield();
   EEPROM.begin(memorySize);
   if(position >0 && position < 256){
 //    for (int address = dataMemoryBegin + (position - 1) * _drinkSize ; address < dataMemoryBegin + (position) * _drinkSize ; address++) {
@@ -435,34 +452,75 @@ void Memory::clearDrinkMemoryAtPosition(byte position) {
   EEPROM.end();
 }
 
-// nao preciso me preocupar com isso
-void Memory::getSsidName(char* name){
+//// nao preciso me preocupar com isso
+//void Memory::getSsidName(char* name){
+//  yield();
+//  EEPROM.begin(memorySize);
+//  for(byte i = 0; i<=ssidName;i++){
+//    yield();
+//     name[i] = EEPROM.read(ssidNameBegin+i);
+//  }
+//  EEPROM.end();
+//}
+//void Memory::setSsidName(char* name){
+//  EEPROM.begin(memorySize);
+//  for(byte i = 0; i<=ssidName;i++){
+//     EEPROM.write(ssidNameBegin+i,name[i]);
+//  }
+//  EEPROM.end();  
+//}
+//
+//void Memory::getSsidPassword(char* password){
+//  EEPROM.begin(memorySize);
+//  for(byte i = 0; i<=ssidPassword;i++){
+//     password[i] = EEPROM.read(ssidPasswordBegin+i);
+//  }
+//  EEPROM.end();
+//}
+//void Memory::setSsidPassword(char* password){
+//  EEPROM.begin(memorySize);
+//  for(byte i = 0; i<=ssidPassword;i++){
+//    EEPROM.write(ssidPasswordBegin+i,password[i]);
+//  }
+//  EEPROM.end();
+//}
+
+void Memory::getUserEmail(char email[]){
+  yield();
   EEPROM.begin(memorySize);
-  for(byte i = 0; i<=ssidName;i++){
-     name[i] = EEPROM.read(ssidNameBegin+i);
-  }
-  EEPROM.end();
-}
-void Memory::setSsidName(char* name){
-  EEPROM.begin(memorySize);
-  for(byte i = 0; i<=ssidName;i++){
-     EEPROM.write(ssidNameBegin+i,name[i]);
-  }
+  int i = 0;
+  do{
+    yield();
+     email[i] = (char)EEPROM.read(userEmailBegin+i);
+     i++;
+  }while((char)EEPROM.read(userEmailBegin+i) != '\0');
+     email[i] = (char)EEPROM.read(userEmailBegin+i);
   EEPROM.end();  
 }
 
-void Memory::getSsidPassword(char* password){
-  EEPROM.begin(memorySize);
-  for(byte i = 0; i<=ssidPassword;i++){
-     password[i] = EEPROM.read(ssidPasswordBegin+i);
+byte Memory::getUserEmailSize(){
+  yield();
+   EEPROM.begin(memorySize);
+  int size = 0;
+  while((char)EEPROM.read(userEmailBegin+size) != '\0'){ 
+    yield();
+    size++;
   }
-  EEPROM.end();
+  return size+1;
+  EEPROM.end(); 
 }
-void Memory::setSsidPassword(char* password){
+
+void Memory::setUserEmail(const char email[]){
+  yield();
   EEPROM.begin(memorySize);
-  for(byte i = 0; i<=ssidPassword;i++){
-    EEPROM.write(ssidPasswordBegin+i,password[i]);
-  }
-  EEPROM.end();
+  Serial.print("Dentro setter: "); Serial.println(email);
+  int i = 0;
+  do{
+    yield();
+    EEPROM.write(userEmailBegin+i,(byte)email[i]);
+    i++;
+  }while(email[i] != '\0');
+  EEPROM.write(userEmailBegin+i,(byte)email[i]);
+  EEPROM.end();  
 }
 

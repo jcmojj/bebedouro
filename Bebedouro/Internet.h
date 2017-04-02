@@ -12,18 +12,18 @@
 class Internet{
   public:
     Internet(WebSocketsClient &webSocket,Memory &memory,Drink &drink);
-//    void connect();
-//    void disconnect();
-//    void getText();
-//    void getBin();
-//    void sendDrink(byte drink);
-////    void check();
+    void connect();
+    void disconnect();
+    void getText();
+    void getBin();
+    void sendDrink(byte drink);
+    void check();
 
   private:
-//    WebSocketsClient *_webSocket;
-//    Memory *_memory;
-//    Drink *_drink;
-//    bool _isConnected;
+    WebSocketsClient *_webSocket;
+    Memory *_memory;
+    Drink *_drink;
+    bool _isConnected;
   
 };
 
