@@ -15,7 +15,7 @@ unsigned long drinkToSendTime = 0;
 
 class Internet{
   public:
-    Internet(Memory &memory,Drink &drink);
+    Internet(Service &service, Memory &memory,Drink &drink);
     void connect();
     void disconnect();
     bool isConnected();
@@ -29,11 +29,13 @@ class Internet{
     byte addSendCounter();
     byte clearSendCounter();
     bool checkSendCounter();
+    void loop();
 
   private:
     WebSocketsClient *_webSocket;
     Memory *_memory;
     Drink *_drink;
+    Service *_service;
     bool _isConnected;
     unsigned long _hashForSentMessage;
     unsigned long _hashForReceivedMessage;

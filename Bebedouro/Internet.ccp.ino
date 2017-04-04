@@ -2,13 +2,20 @@
 
 
 
-Internet::Internet(Memory &memory,Drink &drink){
+Internet::Internet(Service &service, Memory &memory, Drink &drink){
   Serial.begin(115200);
   _memory = &memory;
   _drink = &drink;
+  _service = &service;
   _isConnected = false;
   _sendCounter = 0;
 
+}
+
+void Internet::loop(){
+  internet.checkDrinkToSend(); // compara o valor e so envia se o valor no position received for zero // nao envia nada
+  yield();
+  internet.confirmDrinkWasSuccessfullySent(); // anula o valor do position received // confirma o valor 40  e zera o 
 }
 
 void Internet::connect(){

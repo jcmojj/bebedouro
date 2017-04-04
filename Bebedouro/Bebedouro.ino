@@ -1,12 +1,8 @@
-#ifdef DEBUG_ESP_PORT
-#define DEBUG_MSG(...) DEBUG_ESP_PORT.printf( __VA_ARGS__ )
-#else
-#define DEBUG_MSG(...) 
-#endif
-
 #include "Drink.h"
 #include "Memory.h"
+#include "Service.h"
 #include "Internet.h"
+
 
 // arduino OTA para fazer atualizacao pelo ar
 // DEFINIR STA ou Access Point -- conexao pelo celular
@@ -21,7 +17,7 @@
 #include <WebSocketsClient.h>   // WebSocket 
 #include <Hash.h>               // WebSocket 
 
-#define DEBUG_ESP_PORT Serial;
+//#define DEBUG_ESP_PORT Serial;
 
 Ticker ticker;                  // WiFiManager
 
@@ -34,7 +30,9 @@ Drink drink = Drink();
 //Memory memory = Memory(4095, drink, drink.getSize());
 Memory memory = Memory(drink, drink.getSize());
 //  Memory memory = Memory(drink, drink.getSize(),jsonDrink);
-Internet internet = Internet(memory,drink);
+Service service = Service(memory,drink);
+Internet internet = Internet(service, memory,drink);
+
 
 //int i = 0;
 
@@ -145,10 +143,10 @@ void setup() {
   /* -----------------------         LOOP        ----------------------- */
   /* ------------------------------------------------------------------- */
 void loop() {
-  internet.confirmDrinkWasSuccessfullySent(); // anula o valor do position received // confirma o valor 40  e zera o 
-  webSocket.loop(); // coloca um valor no position receive // verifica que recebeu o valor position = 40
-  internet.checkDrinkToSend(); // compara o valor e so envia se o valor no position received for zero // nao envia nada
   
+  webSocket.loop(); // coloca um valor no position receive // verifica que recebeu o valor position = 40
+  internet.loop();
+  service.loop();
 
 
   
