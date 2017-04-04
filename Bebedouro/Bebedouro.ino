@@ -1,3 +1,9 @@
+#ifdef DEBUG_ESP_PORT
+#define DEBUG_MSG(...) DEBUG_ESP_PORT.printf( __VA_ARGS__ )
+#else
+#define DEBUG_MSG(...) 
+#endif
+
 #include "Drink.h"
 #include "Memory.h"
 #include "Internet.h"
@@ -14,6 +20,8 @@
 #include <ESP8266WiFiMulti.h>   // WebSocket 
 #include <WebSocketsClient.h>   // WebSocket 
 #include <Hash.h>               // WebSocket 
+
+#define DEBUG_ESP_PORT Serial;
 
 Ticker ticker;                  // WiFiManager
 
@@ -42,7 +50,7 @@ void setup() {
 
 //  drink.setValue(20, 2, 17, 11, 50, 30, 57, 'c', 111);
 //  memory.saveDrinkAtMemory();
-  memory.printData();
+//  memory.printData();
   /* ----------------------- SETUP - WiFiManager ----------------------- */
   pinMode(BUILTIN_LED, OUTPUT);
   ticker.attach(0.6, tick);
@@ -100,8 +108,20 @@ void setup() {
 //     webSocket.begin("ws://localhost:8080/EchoChamber/echo", 80);
 //     webSocket.begin("echo.websocket.org", 80, "/echo","arduino");
 //     webSocket.begin("echo.websocket.org", 80, "/echo","arduino");
-       webSocket.begin("websocket-echo.herokuapp.com", 80, "/","arduino");
+       webSocket.begin("websocket-echo.herokuapp.com", 80, "/","arduino"); //melhor
+//webSocket.beginSocketIO("socketio-echo.herokuapp.com", 81, "/","arduino");
+//webSocket.beginSocketIO("socketio-echo.herokuapp.com", 80, "/socket.io/?EIO=3");
+//webSocket.beginSocketIO("socketio-echo.herokuapp.com", 80);
+//webSocket.beginSocketIO("socketio-echo.herokuapp.com", 80, "/","arduino");
+
+//webSocket.beginSocketIO("http://socketio-echo.herokuapp.com", 80);
+//webSocket.beginSocketIO("https://socketio-echo.herokuapp.com", 80);
+//webSocket.beginSocketIO("ws://socketio-echo.herokuapp.com", 80);
+//webSocket.beginSocketIO("wss://socketio-echo.herokuapp.com", 80);
+
 //     webSocket.beginSSL("http://echo.herokuapp.com/", 80, "/","arduino");
+ //webSocket.setAuthorization("user", "Password"); // HTTP Basic Authorization
+
      webSocket.onEvent(webSocketEvent);
 
      Serial.print("Fim WebSocket");
@@ -202,7 +222,7 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t lenght) {
             internet.getText();
             //logica parar parsear info do server -- se voltar drinkpositionreceived x// ai ativo o posicaoRecebida
       // send message to server
-      // webSocket.sendTXT("message here");
+//       webSocket.sendTXT("NERI VIADINHO!");
             break;
         case WStype_BIN:
             Serial.printf("[WSc] get binary lenght: %u\n", lenght);

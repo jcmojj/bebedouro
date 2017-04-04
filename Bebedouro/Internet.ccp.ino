@@ -44,7 +44,7 @@ void Internet::getBin(){
 void Internet::parseJson(uint8_t * json){
   internet.clearSendCounter();
   Serial.println("parseJson");
-  StaticJsonBuffer<400> jsonBufferRoot;
+  StaticJsonBuffer<400> jsonBufferRoot; //400
    JsonObject& root = jsonBufferRoot.parseObject(json);
    if (!root.success()) {
     Serial.println("parseObject() failed");
@@ -77,7 +77,7 @@ void Internet::sendDrink(){
   yield();
  
   long hash = 1234567890;
-  StaticJsonBuffer<400> jsonBuffer;
+  StaticJsonBuffer<400> jsonBuffer; //400
   JsonObject& root = jsonBuffer.createObject();
   root["type"] = "drink";
   
@@ -104,6 +104,8 @@ void Internet::sendDrink(){
 //   root.prettyPrintTo(Serial);
     String output;
     root.printTo(output);
+    Serial.print("Tentando enviar: "); Serial.println(output);
+    
     yield();
     internet.addSendCounter();
     webSocket.sendTXT(output);

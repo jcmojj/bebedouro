@@ -1,7 +1,7 @@
 #ifndef Internet_h
 #define Internet_h
 
-#define checkDrinkToSendInterval 5000 //16382 // 16,3s
+#define checkDrinkToSendInterval 500 //16382 // 16,3s
 unsigned long drinkToSendTime = 0;
 #define sendCounterLimit  50
 
