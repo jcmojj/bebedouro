@@ -11,7 +11,6 @@ Memory::Memory(Drink &drink, byte drinkSize){
   Serial.begin(115200);
   _drink = &drink;
   _drinkSize = drinkSize;
-  
 }
 
 
@@ -424,7 +423,7 @@ void Memory::clearMemory() {
   for (int address = serialNumberBegin; address <= dataMemoryEnd; address++) {
     yield();
     if (EEPROM.read(address) != 255) {
-      EEPROM.write(address, 255); yield();
+      EEPROM.write(address, 255);
     }
   }
   EEPROM.end();
@@ -437,7 +436,7 @@ void Memory::clearDataMemory() {
   for (int address = dataMemoryBegin; address <= dataMemoryEnd; address++) {
     yield();
     if (EEPROM.read(address) != 255) {
-      EEPROM.write(address, 255); yield();
+      EEPROM.write(address, 255); 
     }
   }
   byte firstByte = 0;
@@ -526,6 +525,110 @@ void Memory::setUserEmail(const char email[]){
     i++;
   }while(email[i] != '\0');
   EEPROM.write(userEmailBegin+i,(byte)email[i]);
+  EEPROM.end();  
+}
+
+
+
+
+
+byte Memory::getDrinkAlarmPositionQuantity(){
+  EEPROM.begin(memorySize);
+  byte quantidade = 0;
+  while(EEPROM.read(userEmailBegin+(quantidade)*2) != 255){
+    quantidade++;
+  }
+  return quantidade;
+  yield(); 
+  EEPROM.end();
+}
+byte Memory::findDrinkAlarmPositionFrom(byte hour, byte minute){
+  EEPROM.begin(memorySize);
+  if(getDrinkAlarmPositionQuantity() == 0){
+    return 0;
+  }
+  byte position = 1;
+  while(( EEPROM.read(drinkAlarmPositionsBegin+(position-1)*2) != hour )&&( EEPROM.read(drinkAlarmPositionsBegin+1+(position-1)*2) != minute )){
+    position++;
+    yield();
+    if( position == drinkAlarmPositions + 1){
+      position = 0;
+      break;
+    }
+  }
+  return position;
+  EEPROM.end(); 
+}
+bool Memory::addDrinkAlarm(byte hour, byte minute){
+  EEPROM.begin(memorySize);
+  if( getDrinkAlarmPositionQuantity() == 0 ){
+    EEPROM.write(drinkAlarmPositionsBegin, hour);
+    EEPROM.write(drinkAlarmPositionsBegin + 1, minute);
+  }
+   byte Posicao = getDrinkAlarmNextAlarmPosition(hour, minute) - 1;
+   for(byte address = drinkAlarmPositionsBegin + getDrinkAlarmPositionQuantity()*2 ; 
+            address < (drinkAlarmPositionsBegin + (Posicao-1)*2) ;
+            address = address -2){
+                  EEPROM.write(address, hour);
+                  EEPROM.write(address + 1, minute);
+                  yield();
+            }
+  EEPROM.write(drinkAlarmPositionsBegin+(getDrinkAlarmNextAlarmPosition(hour, minute) - 1)*2, hour);
+  EEPROM.write(drinkAlarmPositionsBegin+1+(getDrinkAlarmNextAlarmPosition(hour, minute) - 1)*2, minute);  
+  EEPROM.end();
+}
+bool Memory::clearDrinkAlam(byte hour, byte minute){
+  EEPROM.begin(memorySize);
+  if(findDrinkAlarmPositionFrom(hour, minute) != 0){
+    EEPROM.write(drinkAlarmPositionsBegin+findDrinkAlarmPositionFrom(hour, minute)*2, 255);
+    EEPROM.write(drinkAlarmPositionsBegin+1+findDrinkAlarmPositionFrom(hour, minute)*2, 255); 
+  }
+  return 0;
+  EEPROM.end();
+}
+byte Memory::getDrinkAlarmHourFromPosition(byte position){
+  EEPROM.begin(memorySize);
+  if(getDrinkAlarmPositionQuantity() == 0){
+    return 255;
+  }
+  yield();
+  return (byte)EEPROM.read(drinkAlarmPositionsBegin+(position-1)*2);
+  EEPROM.end();
+}
+byte Memory::getDrinkAlarmMinuteFromPosition(byte position){
+  EEPROM.begin(memorySize);
+  if(getDrinkAlarmPositionQuantity() == 0){
+    return 255;
+  }
+  yield();
+  return (byte)EEPROM.read(drinkAlarmPositionsBegin+1+(position-1)*2);
+  EEPROM.end();
+}
+byte Memory::getDrinkAlarmNextAlarmPosition(byte hour, byte minute){
+  EEPROM.begin(memorySize);
+  if(getDrinkAlarmPositionQuantity() == 0){
+    return 0;
+  }
+  byte posicao = 1;
+  if(hour == 0 && minute == 0){
+    return posicao;
+  }
+  float horaProcurada = hour + ((float)minute)/60;
+  float horaEeprom = EEPROM.read(drinkAlarmPositionsBegin) + ((float)((byte)EEPROM.read(drinkAlarmPositionsBegin+1)))/60;
+  while((posicao != getDrinkAlarmPositionQuantity())||(horaProcurada > horaEeprom)){
+    horaEeprom = EEPROM.read(drinkAlarmPositionsBegin+(posicao-1)*2) + ((float)((byte)EEPROM.read(1+drinkAlarmPositionsBegin+(posicao-1)*2)))/60;
+    posicao++;
+    yield();
+  }
+  return posicao;
+  EEPROM.end();
+}
+void Memory::clearDrinkAlarmAllPosition(){
+  EEPROM.begin(memorySize);
+  for(int address = drinkAlarmPositionsBegin; address< (drinkAlarmPositionsEnd + 1); address++){
+    EEPROM.write(address, 255);
+  }
+  yield();
   EEPROM.end();  
 }
 

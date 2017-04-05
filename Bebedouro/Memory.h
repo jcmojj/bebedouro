@@ -5,6 +5,8 @@
 #include "Drink.h"
 #include <EEPROM.h>
 
+#define drinkAlarmPositions 25
+#define eatAlarmPositions 25
 #define serialNumber 50
 #define ssidName 50
 #define ssidPassword 50
@@ -12,7 +14,11 @@
 #define userEmail 50
 #define dataMemorySize (_drinkSize*255)
 
-#define serialNumberBegin 0
+#define drinkAlarmPositionsBegin 0
+#define drinkAlarmPositionsEnd (drinkAlarmPositionsBegin+drinkAlarmPositions*2-1)
+#define eatAlarmPositionsBegin (drinkAlarmPositionsEnd+1)
+#define eatAlarmPositionsEnd (eatAlarmPositionsBegin+eatAlarmPositions*2-1)
+#define serialNumberBegin (eatAlarmPositionsEnd+1)
 #define serialNumberEnd (serialNumberBegin+serialNumber-1)
 #define ssidNameBegin (serialNumberEnd+1)
 #define ssidNameEnd (ssidNameBegin+ssidName-1)
@@ -64,6 +70,17 @@ class Memory{
 
     void getSsidPassword(char* password);
     void setSsidPassword(char* password);
+
+    byte getDrinkAlarmPositionQuantity(); //0=sem posicao - 1<=posicao<=25
+    bool addDrinkAlarm(byte hour, byte minute);
+    byte findDrinkAlarmPositionFrom(byte hour, byte minute);
+    bool clearDrinkAlam(byte hour, byte minute);
+    byte getDrinkAlarmHourFromPosition(byte position);
+    byte getDrinkAlarmMinuteFromPosition(byte position);
+    byte getDrinkAlarmNextAlarmPosition(byte hour, byte minute); //0=sem posicao - 1<=posicao<=25
+    void clearDrinkAlarmAllPosition();
+    
+    
 
   private:
     int getNextPositionAvailable();

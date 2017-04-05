@@ -63,6 +63,7 @@ class Service{
     bool isDateTimeValid();
     float getTemperature();
     void printTemperature();
+    void atualizarAlarmes();
     
     
   private:
