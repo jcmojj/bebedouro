@@ -6,7 +6,7 @@
 #include <EEPROM.h>
 
 #define drinkAlarmPositions 25
-#define eatAlarmPositions 25
+#define mealAlarmPositions 25
 #define serialNumber 50
 #define ssidName 50
 #define ssidPassword 50
@@ -16,9 +16,9 @@
 
 #define drinkAlarmPositionsBegin 0
 #define drinkAlarmPositionsEnd (drinkAlarmPositionsBegin+drinkAlarmPositions*2-1)
-#define eatAlarmPositionsBegin (drinkAlarmPositionsEnd+1)
-#define eatAlarmPositionsEnd (eatAlarmPositionsBegin+eatAlarmPositions*2-1)
-#define serialNumberBegin (eatAlarmPositionsEnd+1)
+#define mealAlarmPositionsBegin (drinkAlarmPositionsEnd+1)
+#define mealAlarmPositionsEnd (mealAlarmPositionsBegin+mealAlarmPositions*2-1)
+#define serialNumberBegin (mealAlarmPositionsEnd+1)
 #define serialNumberEnd (serialNumberBegin+serialNumber-1)
 #define ssidNameBegin (serialNumberEnd+1)
 #define ssidNameEnd (ssidNameBegin+ssidName-1)
@@ -48,6 +48,7 @@ class Memory{
     void clearDataMemory();
     void clearDrinkMemoryAtPosition(byte position);
 
+    void preenchendoDrinksParaTeste();
     void print();
     void printData();
     void printDrinkFromPosition(byte position);
@@ -79,14 +80,17 @@ class Memory{
     byte getDrinkAlarmMinuteFromPosition(byte position);
     byte getDrinkAlarmNextAlarmPosition(byte hour, byte minute); //0=sem posicao - 1<=posicao<=25
     void clearDrinkAlarmAllPosition();
+    void DrinkAlarmTest();
     
     
-
+    
   private:
     int getNextPositionAvailable();
     Drink *_drink;
     int _size;
     byte _drinkSize;
+    uint8_t readByte(uint16_t address);
+    void writeByte(uint16_t address, uint8_t value);
 //    JsonObject& _jsonDrink;
 
   

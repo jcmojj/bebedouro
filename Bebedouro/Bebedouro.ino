@@ -91,16 +91,10 @@ void setup() {
   Serial.println("local ip");
   Serial.println(WiFi.localIP());
   /* ----------------------- SETUP - WiFiManager ----------------------- */
-
-//  zerando e preenchendo a memoria
-  memory.clearDataMemory();
-  for(byte mes = 1; mes<11 ; mes++){
-    for(byte dia = 1; dia<30 ; dia ++){
-      drink.setValue(dia,mes,1984,9,50,30,57,'c',111,0,0);
-      memory.saveDrinkAtMemory();
-    }
-  }
-  Serial.println("Memoria Limpa");
+//// teste da memoria recebendo alarmes
+  memory.DrinkAlarmTest();
+////  zerando e preenchendo a memoria
+//  memory.preenchendoDrinksParaTeste();
 
   Serial.println("Fim do WiFi Manager");
 //     webSocket.begin("ws://localhost:8080/EchoChamber/echo", 80);
@@ -109,7 +103,12 @@ void setup() {
        webSocket.begin("websocket-echo.herokuapp.com", 80, "/","arduino"); //melhor
 //webSocket.beginSocketIO("socketio-echo.herokuapp.com", 81, "/","arduino");
 //webSocket.beginSocketIO("socketio-echo.herokuapp.com", 80, "/socket.io/?EIO=3");
+//webSocket.beginSocketIO("socketio-echo.herokuapp.com", 80, "/socket.io/?EIO=3&transport=websocket"); // melhor 2
+
 //webSocket.beginSocketIO("socketio-echo.herokuapp.com", 80);
+//webSocket.beginSocketIO("https://socketio-chat-example.now.sh/", 80);
+//webSocket.beginSocketIO("socketio-chat-example.now.sh/", 80);
+
 //webSocket.beginSocketIO("socketio-echo.herokuapp.com", 80, "/","arduino");
 
 //webSocket.beginSocketIO("http://socketio-echo.herokuapp.com", 80);
