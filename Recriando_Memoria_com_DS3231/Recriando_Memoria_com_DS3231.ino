@@ -28,7 +28,7 @@ RtcDS3231<TwoWire> rtc(Wire);
 /* for normal hardware wire use above */
 
 Drink drink = Drink();
-//Memory memory = Memory(drink, drink.getSize(), rtc);
+Memory memory = Memory(drink, drink.getSize(), rtc);
 //Memory memory = Memory(drink, drink.getSize(), rtc);
 
 
@@ -78,12 +78,30 @@ void setup ()
     // just clear them to your needed state
     rtc.Enable32kHzPin(false);
     rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone); 
+
+    Serial.println("GRAVANDO");
+    byte valor = 0;
+    for(int address = 0; address<4096; address++){
+      Serial.print("Address: "); Serial.print(address);
+      Serial.print(" - Valor Salvo: "); Serial.print(valor);
+      memory.eeprom_write(address, valor);
+      Serial.print(" - Valor Recuperado: ");Serial.println((byte)memory.eeprom_read(address));
+      valor++;
+    }
+    Serial.println("RECUPERANDO");
+    for(int address = 0; address<4096; address++){
+      Serial.print("Address: "); Serial.print(address);
+      Serial.print(" - Valor Salvo: "); Serial.print(valor);
+      Serial.print(" - Valor Recuperado: ");Serial.println((byte)memory.eeprom_read(address));
+      valor++;
+    } 
+    
 }
 
 void loop () 
 {
     RtcDateTime now = rtc.GetDateTime();
-
+    delay(15000);
     printDateTime(now);
     Serial.println();
 

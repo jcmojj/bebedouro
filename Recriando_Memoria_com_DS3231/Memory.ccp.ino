@@ -5,23 +5,57 @@ Memory::Memory(Drink &drink, byte drinkSize, RtcDS3231<TwoWire> &rtc) {
   _drink = &drink;
   _drinkSize = drinkSize;
   _rtc = &rtc;
+  if(dataMemoryEnd >4095){
+    Serial.println("ESTOUROU MEMORIA");
+  }
 }
 
-//Memory::Memory(Drink &drink, byte drinkSize) {
-//  _drink = &drink;
-//  _drinkSize = drinkSize;
-////  _rtc = &rtc;
-//}
+void Memory::memoryTest() {
+  Serial.println("GRAVANDO");
+  byte valor = 0;
+  for (int address = 0; address < 4096; address++) {
+    Serial.print("Address: "); Serial.print(address);
+    Serial.print(" - Valor Salvo: "); Serial.print(valor);
+    eeprom_write(address, valor);
+    Serial.print(" - Valor Recuperado: "); Serial.println((byte)eeprom_read(address));
+    valor++;
+  }
+  Serial.println("RECUPERANDO");
+  for (int address = 0; address < 4096; address++) {
+    Serial.print("Address: "); Serial.print(address);
+    Serial.print(" - Valor Salvo: "); Serial.print(valor);
+    Serial.print(" - Valor Recuperado: "); Serial.println((byte)eeprom_read(address));
+    valor++;
+  }
+}
+unsigned char Memory::eeprom_read(const unsigned int address) {
+  byte rdata = 0xFF;
+  uint8_t  highAddressByte  = (uint8_t) (address >> 8);  // byte with the four MSBits of the address
+  uint8_t  lowAddressByte   = (uint8_t) (address - ((uint16_t) highAddressByte << 8)); // byte with the eight LSbits of the address
+  Wire.beginTransmission(AT24C32_ADDRESS);
+  Wire.write(highAddressByte); // MSB
+  Wire.write(lowAddressByte); // LSB
+  Wire.endTransmission(false);
+  Wire.requestFrom(AT24C32_ADDRESS, (uint8_t)1);
+  delay(3);
+  //  if (Wire.available()) {
+  rdata = Wire.read();
+  //  }
+  delay(3);
+  return rdata;
+}
+void Memory::eeprom_write(const unsigned int address, const unsigned char data) {
+  uint8_t  highAddressByte  = (uint8_t) (address >> 8);  // byte with the four MSBits of the address
+  uint8_t  lowAddressByte   = (uint8_t) (address - ((uint16_t) highAddressByte << 8)); // byte with the eight LSbits of the address
+  Wire.beginTransmission(AT24C32_ADDRESS);
+  Wire.write(highAddressByte); // MSB
+  Wire.write(lowAddressByte); // LSB
+  Wire.write(data);
+  delay(3); // Little delay to assure EEPROM is able to process data; if missing and inside for look meses some values
+  Wire.endTransmission();
+  delay(3);
+}
 
-
-
-//
-////Memory::Memory(Drink &drink, byte drinkSize, JsonObject& jsonDrink){
-//////  Serial.begin(9600);
-////  _drink = &drink;
-////  _drinkSize = drinkSize;
-////  _jsonDrink = jsonDrink;
-////}
 //
 //void Memory::saveDrinkAtMemory() {
 //  byte nextPositionToSave = getNextPositionToWriteDrink();
@@ -443,86 +477,85 @@ Memory::Memory(Drink &drink, byte drinkSize, RtcDS3231<TwoWire> &rtc) {
 //  EEPROM.end();
 //}
 //
-//void Memory::printData() {
-//  yield();
-//  EEPROM.begin(memorySize);
-//  uint8_t value = 0;
-//  Serial.print("\n");
-//  Serial.println("Data Memory");
-//  Serial.print("(address= "); if (dataMemoryBegin < 100) {
-//    Serial.print(" ");
-//  } if (dataMemoryBegin < 10) {
-//    Serial.print(" ");
-//  } Serial.print(dataMemoryBegin); Serial.print(")");
-//  Serial.print("(Position=  1)");
-//  for (int address = dataMemoryBegin; address <= dataMemoryEnd; address++) {
-//    yield();
-//    value = EEPROM.read(address);
-//    if (value < 100) {
-//      Serial.print(" ");
-//    } if (value < 10) {
-//      Serial.print(" ");
-//    }
-//    Serial.print(value, DEC);
-//
-//    if ((address + 1 - dataMemoryBegin) % _drinkSize == 0) {
-//      Serial.print("-(address="); if (address < 100) {
-//        Serial.print(" ");
-//      } if (address < 10) {
-//        Serial.print(" ");
-//      } Serial.print(address); Serial.print(")");
-//      Serial.println("");
-//      if (address != dataMemoryEnd) {
-//        Serial.print("(address="); if (address < 1000) {
-//          Serial.print(" ");
-//        } if (address < 100) {
-//          Serial.print(" ");
-//        } if (address < 10) {
-//          Serial.print(" ");
-//        } Serial.print(address + 1); Serial.print(")");
-//        Serial.print("(Position="); if ((2 + (address - dataMemoryBegin) / _drinkSize) < 100) {
-//          Serial.print(" ");
-//        } if ((2 + (address - dataMemoryBegin) / _drinkSize) < 10) {
-//          Serial.print(" ");
-//        } Serial.print(2 + (address - dataMemoryBegin) / _drinkSize); Serial.print(")");
-//      }
-//      yield();
-//    } else {
-//      Serial.print("-");
-//    }
-//
-//  }
-//  EEPROM.end();
-//}
-//
-//void Memory::clearMemory() {
-//  yield();
-//  EEPROM.begin(memorySize);
-//  Serial.print("Clean Memory");
-//  for (int address = serialNumberBegin; address <= dataMemoryEnd; address++) {
-//    yield();
-//    if (EEPROM.read(address) != 255) {
-//      EEPROM.write(address, 255);
-//    }
-//  }
-//  EEPROM.end();
-//}
-//
-//void Memory::clearDataMemory() {
-//  yield();
-//  EEPROM.begin(memorySize);
-//  Serial.println("Clean Data Memory");
-//  for (int address = dataMemoryBegin; address <= dataMemoryEnd; address++) {
-//    yield();
-//    if (EEPROM.read(address) != 255) {
-//      EEPROM.write(address, 255);
-//    }
-//  }
-//  byte firstByte = 0;
-//  EEPROM.write(dataMemoryBegin + 2, firstByte);
-//  EEPROM.end();
-//}
-//
+void Memory::printData() {
+  uint8_t value = 0;
+  Serial.println("\nData Memory");
+  Serial.print("(address= "); if (dataMemoryBegin < 100) {
+    Serial.print(" ");
+  } if (dataMemoryBegin < 10) {
+    Serial.print(" ");
+  } 
+  Serial.print(dataMemoryBegin);
+  Serial.print(")(Position=  1)");
+  for (int address = dataMemoryBegin; address <= dataMemoryEnd; address++) {
+    yield();
+    value = eeprom_read(address);
+    if (value < 100) {
+      Serial.print(" ");
+    } if (value < 10) {
+      Serial.print(" ");
+    }
+    Serial.print(value, DEC);
+
+    if ((address + 1 - dataMemoryBegin) % _drinkSize == 0) {
+      Serial.print("-(address="); 
+      if (address < 100) {
+        Serial.print(" ");
+      } 
+      if (address < 10) {
+        Serial.print(" ");
+      } 
+      Serial.print(address); 
+      Serial.println(")");
+      if (address != dataMemoryEnd) {
+        Serial.print("(address="); if (address < 1000) {
+          Serial.print(" ");
+        } 
+        if (address < 100) {
+          Serial.print(" ");
+        } 
+        if (address < 10) {
+          Serial.print(" ");
+        } 
+        Serial.print(address + 1);
+        Serial.print(")(Position="); 
+        if ((2 + (address - dataMemoryBegin) / _drinkSize) < 100) {
+          Serial.print(" ");
+        } if ((2 + (address - dataMemoryBegin) / _drinkSize) < 10) {
+          Serial.print(" ");
+        } 
+        Serial.print(2 + (address - dataMemoryBegin) / _drinkSize); 
+        Serial.print(")");
+      }
+      yield();
+    } else {
+      Serial.print("-");
+    }
+  }
+}
+
+void Memory::clearMemory() {
+  Serial.print("Clean Memory");
+  for (int address = userEmailBegin; address <= dataMemoryEnd; address++) {
+    yield();
+    if (eeprom_read(address) != 255) {
+      eeprom_write(address, 255);
+    }
+  }
+}
+
+void Memory::clearDataMemory() {
+  Serial.println("Clean Data Memory");
+  for (int address = dataMemoryBegin; address <= dataMemoryEnd; address++) {
+    yield();
+    if (eeprom_read(address) != 255) {
+      eeprom_write(address, 255);
+    }
+  }
+  byte firstByte = 0;
+  eeprom_write(dataMemoryBegin + 2, firstByte);
+}
+
 //void Memory::clearDrinkMemoryAtPosition(byte position) {
 //  yield();
 //  EEPROM.begin(memorySize);
@@ -535,38 +568,6 @@ Memory::Memory(Drink &drink, byte drinkSize, RtcDS3231<TwoWire> &rtc) {
 //  EEPROM.end();
 //}
 //
-////// nao preciso me preocupar com isso
-////void Memory::getSsidName(char* name){
-////  yield();
-////  EEPROM.begin(memorySize);
-////  for(byte i = 0; i<=ssidName;i++){
-////    yield();
-////     name[i] = EEPROM.read(ssidNameBegin+i);
-////  }
-////  EEPROM.end();
-////}
-////void Memory::setSsidName(char* name){
-////  EEPROM.begin(memorySize);
-////  for(byte i = 0; i<=ssidName;i++){
-////     EEPROM.write(ssidNameBegin+i,name[i]);
-////  }
-////  EEPROM.end();
-////}
-////
-////void Memory::getSsidPassword(char* password){
-////  EEPROM.begin(memorySize);
-////  for(byte i = 0; i<=ssidPassword;i++){
-////     password[i] = EEPROM.read(ssidPasswordBegin+i);
-////  }
-////  EEPROM.end();
-////}
-////void Memory::setSsidPassword(char* password){
-////  EEPROM.begin(memorySize);
-////  for(byte i = 0; i<=ssidPassword;i++){
-////    EEPROM.write(ssidPasswordBegin+i,password[i]);
-////  }
-////  EEPROM.end();
-////}
 //
 //void Memory::getUserEmail(char email[]) {
 //  yield();
@@ -628,7 +629,7 @@ Memory::Memory(Drink &drink, byte drinkSize, RtcDS3231<TwoWire> &rtc) {
 //  while (readByte(drinkAlarmPositionsBegin + (quantidade) * 2) != 255) {
 //    Serial.print("\n - (drinkAlarmPositionsBegin + (quantidade) * 2): "); Serial.print((drinkAlarmPositionsBegin + (quantidade) * 2));
 //    Serial.print(" - 1Eepromread: ");Serial.print(readByte(drinkAlarmPositionsBegin + (quantidade) * 2));
-//    Serial.print("- quant: "); Serial.print(quantidade); 
+//    Serial.print("- quant: "); Serial.print(quantidade);
 //    quantidade++;
 //  }
 ////  EEPROM.end();
@@ -666,7 +667,7 @@ Memory::Memory(Drink &drink, byte drinkSize, RtcDS3231<TwoWire> &rtc) {
 //    maiorHorario =readByte( drinkAlarmPositionsBegin+2*(quantidade-1) ) + ((float)( readByte( 1+drinkAlarmPositionsBegin+2*(quantidade-1) ) ))/60;
 //  }
 //
-//  
+//
 //  Serial.print(" - horarioAdd: "); Serial.print(horarioAdd); Serial.print(" - maiorHorario: "); Serial.print(maiorHorario); Serial.print(" - quantidade: "); Serial.println(quantidade);
 //  if ( quantidade == 25 ){
 ////    EEPROM.end();
@@ -697,7 +698,7 @@ Memory::Memory(Drink &drink, byte drinkSize, RtcDS3231<TwoWire> &rtc) {
 ////  Serial.print("(ERadd2: ");Serial.print(readByte(drinkAlarmPositionsBegin + (0) * 2));Serial.print(")");
 ////  EEPROM.end();
 //  return true;
-//  
+//
 //}
 //bool Memory::clearDrinkAlam(byte hour, byte minute) {
 //  EEPROM.begin(memorySize);
@@ -793,7 +794,7 @@ Memory::Memory(Drink &drink, byte drinkSize, RtcDS3231<TwoWire> &rtc) {
 //  value = EEPROM.read(address); Serial.print("(readValue:"); Serial.print(value);Serial.print(")");
 ////  EEPROM.commit();
 //  EEPROM.end();
-//  return value;  
+//  return value;
 //}
 //void Memory::writeByte(uint16_t address, uint8_t value){
 //  EEPROM.begin(memorySize);

@@ -5,33 +5,38 @@
 #include "Drink.h"
 #include <Wire.h> // must be included here so that Arduino library object file references work
 #include <RtcDS3231.h>
-//#include <EEPROM.h>
 
-#define drinkAlarmPositions 25
-#define mealAlarmPositions 25
-#define serialNumber 50
-#define ssidName 50
-#define ssidPassword 50
-#define userName 50
-#define userEmail 50
+#define drinkAlarmPositionsSize     2
+#define mealAlarmPositionsSize      2
+#define cleaningAlarmPositionsSize  2
+
+#define userEmailSpace          2 * 32
+#define serialNumberSpace       1 * 32
+#define drinkAlarmPositions         32
+#define mealAlarmPositions          32 
+#define cleaningAlarmPositions      32
+
+
+
+#define userEmailBegin              0
+#define userEmailEnd                (userEmailBegin+userEmailSpace-1)
+#define serialNumberBegin           (userEmailEnd+1)
+#define serialNumberEnd             (serialNumberBegin+serialNumberSpace-1)
+#define drinkAlarmPositionsBegin    (serialNumberEnd+1)
+#define drinkAlarmPositionsEnd      (drinkAlarmPositionsBegin+drinkAlarmPositions*drinkAlarmPositionsSize-1)
+#define mealAlarmPositionsBegin     (drinkAlarmPositionsEnd+1)
+#define mealAlarmPositionsEnd       (mealAlarmPositionsBegin+mealAlarmPositions*mealAlarmPositionsSize-1)
+#define cleaningAlarmPositionsBegin (mealAlarmPositionsEnd+1)
+#define cleaningAlarmPositionsEnd   (cleaningAlarmPositionsBegin+cleaningAlarmPositions*cleaningAlarmPositionsSize-1)
+
+#define freeSpace dataMemoryBegin -  cleaningAlarmPositionsEnd+1
+
+#define dataMemoryBegin 3072
 #define dataMemorySize (_drinkSize*255)
-
-#define drinkAlarmPositionsBegin 0
-#define drinkAlarmPositionsEnd (drinkAlarmPositionsBegin+drinkAlarmPositions*2-1)
-#define mealAlarmPositionsBegin (drinkAlarmPositionsEnd+1)
-#define mealAlarmPositionsEnd (mealAlarmPositionsBegin+mealAlarmPositions*2-1)
-#define serialNumberBegin (mealAlarmPositionsEnd+1)
-#define serialNumberEnd (serialNumberBegin+serialNumber-1)
-#define ssidNameBegin (serialNumberEnd+1)
-#define ssidNameEnd (ssidNameBegin+ssidName-1)
-#define ssidPasswordBegin (ssidNameEnd+1)
-#define ssidPasswordEnd (ssidPasswordBegin+ssidPassword-1)
-#define userEmailBegin (ssidPasswordEnd+1)
-#define userEmailEnd (userEmailBegin+userEmail-1)
-#define dataMemoryBegin (userEmailEnd+1)
-#define dataMemoryEnd (dataMemoryBegin+dataMemorySize-1) //4194304
+#define dataMemoryEnd (dataMemoryBegin+dataMemorySize-1) // 4095 byte
 #define memorySize dataMemoryEnd
-//#define drinkSize 12 //bytes
+
+const uint8_t AT24C32_ADDRESS = 0x57;
 
 // Ultima posicao enviada sempre tera o numero 128+64+32 na posicao do dia
 // Posicao a ser enviada sempre tera dia menor que 32
@@ -42,44 +47,23 @@ class Memory{
   public:
   
     Memory(Drink &drink, byte drinkSize, RtcDS3231<TwoWire> &rtc);
-//    Memory(Drink &drink, byte drinkSize);
+    void memoryTest();
+    unsigned char eeprom_read(const unsigned int address);
+    void eeprom_write(const unsigned int address, const unsigned char data);
 
-//    void testaRtc(RtcDS3231<TwoWire> &rtc){
-//      RtcDS3231<TwoWire> *rd = &rtc;
-//      
-////      printDateTime(now);
-////      while(true){
-////        RtcDateTime now = rd->GetDateTime();
-////        Serial.print("Segundo: "); Serial.print(now.Second());
-////      }
-//    }
-//    #define countof(a) (sizeof(a) / sizeof(a[0]))
-//    void printDateTime(const RtcDateTime& dt){
-//  char datestring[20];
-//
-//  snprintf_P(datestring, 
-//      countof(datestring),
-//      PSTR("%02u/%02u/%04u %02u:%02u:%02u"),
-//      dt.Month(),
-//      dt.Day(),
-//      dt.Year(),
-//      dt.Hour(),
-//      dt.Minute(),
-//      dt.Second() );
-//    Serial.print(datestring);
-//}
+
 //    void saveDrinkAtMemory(); // fazer lembrando de apagar memoria caso esteja cheia
 //    void lastDrinkWasSentToServerWithSucess(); //fazer
 //    byte getNextDrinkToSendToServer(); //fazer
 //    //lembrar de usar o ano ou o tipo de dado para alternar confirmacao de posicao --> trabalhoso --> por ultimo
 //    
-//    void clearMemory();
-//    void clearDataMemory();
+    void clearMemory();
+    void clearDataMemory();
 //    void clearDrinkMemoryAtPosition(byte position);
 //
 //    void preenchendoDrinksParaTeste();
 //    void print();
-//    void printData();
+    void printData();
 //    void printDrinkFromPosition(byte position);
 //    void getDrinkFromPosition(byte position);
 //    void setDrinkAtPosition(byte position);
