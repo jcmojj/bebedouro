@@ -31,9 +31,9 @@
 
 #define freeSpace dataMemoryBegin -  cleaningAlarmPositionsEnd+1
 
-#define dataMemoryBegin 3072
+#define dataMemoryBegin 1024
 #define dataMemorySize (_drinkSize*255)
-#define dataMemoryEnd (dataMemoryBegin+dataMemorySize-1) // 4095 byte
+#define dataMemoryEnd (dataMemoryBegin+dataMemorySize-1) // 4083 byte --> pode ir ate 4095
 #define memorySize dataMemoryEnd
 
 const uint8_t AT24C32_ADDRESS = 0x57;
@@ -62,7 +62,7 @@ class Memory{
 //    void clearDrinkMemoryAtPosition(byte position);
 //
 //    void preenchendoDrinksParaTeste();
-//    void print();
+    void print();
     void printData();
 //    void printDrinkFromPosition(byte position);
 //    void getDrinkFromPosition(byte position);
@@ -75,7 +75,7 @@ class Memory{
 //    byte getNextPositionToCleanDrink();
 //    byte getNextPositionToReadDrink();
 //
-//    void getUserEmail(char email[]);
+    char* readBytes(const unsigned int address, uint8_t count, char * dest); //void getUserEmail(char email[]);
 //    void setUserEmail(const char email[]);
 //    byte getUserEmailSize();  
 //

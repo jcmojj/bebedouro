@@ -79,22 +79,20 @@ void setup ()
     rtc.Enable32kHzPin(false);
     rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone); 
 
-    Serial.println("GRAVANDO");
-    byte valor = 0;
-    for(int address = 0; address<4096; address++){
-      Serial.print("Address: "); Serial.print(address);
-      Serial.print(" - Valor Salvo: "); Serial.print(valor);
-      memory.eeprom_write(address, valor);
-      Serial.print(" - Valor Recuperado: ");Serial.println((byte)memory.eeprom_read(address));
-      valor++;
-    }
-    Serial.println("RECUPERANDO");
-    for(int address = 0; address<4096; address++){
-      Serial.print("Address: "); Serial.print(address);
-      Serial.print(" - Valor Salvo: "); Serial.print(valor);
-      Serial.print(" - Valor Recuperado: ");Serial.println((byte)memory.eeprom_read(address));
-      valor++;
-    } 
+    memory.eeprom_write(0,5);
+
+//    Serial.print("ep1026: "); Serial.print(memory.eeprom_read(1026));
+//    memory.memoryTest();
+      char teste[100];
+//    Serial.print("\nbytes: "); Serial.write(memory.readBytes(70,10));
+//    Serial.print("\nbytes: "); Serial.println(memory.readBytes(48,64,&teste[0]));
+//for(byte i =1;i<65;i++){
+//  Serial.print("\nPosicoes="); Serial.print(i);
+//  Serial.print("\nbytes: "); Serial.println(memory.readBytes(48,i,&teste[0]));
+//}
+
+    char email[] = "jcmojj@gmail.com";
+    
     
 }
 

@@ -5,7 +5,7 @@ Memory::Memory(Drink &drink, byte drinkSize, RtcDS3231<TwoWire> &rtc) {
   _drink = &drink;
   _drinkSize = drinkSize;
   _rtc = &rtc;
-  if(dataMemoryEnd >4095){
+  if (dataMemoryEnd > 4095) {
     Serial.println("ESTOUROU MEMORIA");
   }
 }
@@ -27,6 +27,12 @@ void Memory::memoryTest() {
     Serial.print(" - Valor Recuperado: "); Serial.println((byte)eeprom_read(address));
     valor++;
   }
+    memory.printData();
+//    memory.clearDataMemory();
+//    memory.printData();
+//    memory.print();
+//    memory.clearMemory();
+//    memory.print();
 }
 unsigned char Memory::eeprom_read(const unsigned int address) {
   byte rdata = 0xFF;
@@ -43,6 +49,32 @@ unsigned char Memory::eeprom_read(const unsigned int address) {
   //  }
   delay(3);
   return rdata;
+}
+char* Memory::readBytes(const unsigned int address, uint8_t count, char * dest){
+
+  uint8_t  highAddressByte  = (uint8_t) (address >> 8);  // byte with the four MSBits of the address
+  uint8_t  lowAddressByte   = (uint8_t) (address - ((uint16_t) highAddressByte << 8)); // byte with the eight LSbits of the address  
+  Wire.beginTransmission(AT24C32_ADDRESS);   // Initialize the Tx buffer
+  Wire.write(highAddressByte); // MSB
+  Wire.write(lowAddressByte); // LSB  
+
+  Wire.endTransmission(false);       // Send the Tx buffer, but send a restart to keep connection alive
+  uint8_t i = 0;
+  Wire.requestFrom(AT24C32_ADDRESS, (uint8_t)count);  // Read bytes from slave register address
+  while (Wire.available() && i < 32 ) {
+    delay(5);
+    dest[i] = (char)Wire.read();
+    delay(5);
+    dest[i+1] = '\0';
+//    Serial.print("i(");Serial.print(i); Serial.print("): "); Serial.print(dest[i]); Serial.print(" - ");
+    i++;
+  }         // Put read results in the Rx buffer
+//  Serial.println("");
+
+  if(count > 32 && count < (userEmailSpace+1) ){
+   readBytes(address+32, count-32, (dest+32));
+  }
+  return dest;
 }
 void Memory::eeprom_write(const unsigned int address, const unsigned char data) {
   uint8_t  highAddressByte  = (uint8_t) (address >> 8);  // byte with the four MSBits of the address
@@ -260,223 +292,226 @@ void Memory::eeprom_write(const unsigned int address, const unsigned char data) 
 //  }
 //  Serial.println("Memoria Limpa");
 //}
-//
-//void Memory::print() {
-//  Serial.println("\nMemory\n");
-//  Serial.printf("Flash chip ID: %d\n", ESP.getFlashChipId());
-//  Serial.printf("Flash chip size (in bytes): %d\n", ESP.getFlashChipSize());
-//  Serial.printf("Flash chip speed (in Hz): %d\n", ESP.getFlashChipSpeed());
-//  Serial.print("Memory Total Size (EEPROM):"); Serial.println(memorySize);
-//  yield();
-//  Serial.print("\nDrink Alarm Memory");   Serial.print(" from " );  Serial.print(drinkAlarmPositionsBegin);   Serial.print(" to "); Serial.println(drinkAlarmPositionsEnd);
-//  Serial.print("Meal Alarm Memory");    Serial.print(" from " );  Serial.print(mealAlarmPositionsBegin);    Serial.print(" to "); Serial.println(mealAlarmPositionsEnd);
-//  Serial.print("Serial Number Memory"); Serial.print(" from " );  Serial.print(serialNumberBegin);          Serial.print(" to "); Serial.println(serialNumberEnd);
-//  Serial.print("SSID Name Memory");       Serial.print(" from " );  Serial.print(ssidNameBegin);              Serial.print(" to "); Serial.println(ssidNameEnd);
-//  Serial.print("SSID Password Memory");   Serial.print(" from " );  Serial.print(ssidPasswordBegin);          Serial.print(" to "); Serial.println(ssidPasswordEnd);
-//  Serial.print("Email Memory");           Serial.print(" from " );  Serial.print(userEmailBegin);             Serial.print(" to "); Serial.println(userEmailEnd);
-//  Serial.print("Data Memory");            Serial.print(" from " );  Serial.print(dataMemoryBegin);            Serial.print(" to "); Serial.println(dataMemoryEnd);
-//
-//  Serial.print("Water Memory Size ");     Serial.println(_drinkSize);
-//
-//  yield();
-//  EEPROM.begin(memorySize);
-//  uint8_t value = 0;
-////----
-//Serial.print("\n");
-//  Serial.println("Drink Alarm Memory");
-//  Serial.print("(address="); if (drinkAlarmPositionsBegin < 100) {
-//    Serial.print(" ");
-//  } if (drinkAlarmPositionsBegin < 10) {
-//    Serial.print(" ");
-//  } Serial.print(drinkAlarmPositionsBegin); Serial.print(")-");
-//  for (int address = drinkAlarmPositionsBegin; address <= drinkAlarmPositionsEnd; address++) {
-//    yield();
-//    value = EEPROM.read(address);
-//    if (value < 100) {
-//      Serial.print(" ");
-//    } if (value < 10) {
-//      Serial.print(" ");
-//    }
-//    Serial.print(value, DEC);
-//    if ((address + 1) % 25 == 0) {
-//      Serial.print("-(address="); if (address < 100) {
-//        Serial.print(" ");
-//      } if (address < 10) {
-//        Serial.print(" ");
-//      } Serial.print(address); Serial.print(")");
-//      Serial.println("");
-//      if (address != drinkAlarmPositionsEnd) {
-//        Serial.print("(address=");
-//        if ((address + 1) < 100) {
-//          Serial.print(" ");
-//        } if ((address + 1) < 10) {
-//          Serial.print(" ");
-//        } Serial.print(address + 1);
-//        Serial.print(")-");
-//      }
-//      yield();
-//    } else {
-//      Serial.print("-");
-//    }
-//  }
-////----
-//
-////----
-//  Serial.print("\n");
-//  Serial.println("Meal Alarm Memory");
-//  Serial.print("(address="); if (mealAlarmPositionsBegin < 100) {
-//    Serial.print(" ");
-//  } if (mealAlarmPositionsBegin < 10) {
-//    Serial.print(" ");
-//  } Serial.print(mealAlarmPositionsBegin); Serial.print(")-");
-//  for (int address = mealAlarmPositionsBegin; address <= mealAlarmPositionsEnd; address++) {
-//    yield();
-//    value = EEPROM.read(address);
-//    if (value < 100) {
-//      Serial.print(" ");
-//    } if (value < 10) {
-//      Serial.print(" ");
-//    }
-//    Serial.print(value, DEC);
-//    if ((address + 1) % 25 == 0) {
-//      Serial.print("-(address="); if (address < 100) {
-//        Serial.print(" ");
-//      } if (address < 10) {
-//        Serial.print(" ");
-//      } Serial.print(address); Serial.print(")");
-//      Serial.println("");
-//      if (address != mealAlarmPositionsEnd) {
-//        Serial.print("(address=");
-//        if ((address + 1) < 100) {
-//          Serial.print(" ");
-//        } if ((address + 1) < 10) {
-//          Serial.print(" ");
-//        } Serial.print(address + 1);
-//        Serial.print(")-");
-//      }
-//      yield();
-//    } else {
-//      Serial.print("-");
-//    }
-//  }
-//
-//
-//  Serial.print("\n");
-//  Serial.println("SSID Name Memory");
-//  Serial.print("(address="); if (ssidNameBegin < 100) {
-//    Serial.print(" ");
-//  } if (ssidNameBegin < 10) {
-//    Serial.print(" ");
-//  } Serial.print(ssidNameBegin); Serial.print(")-");
-//  for (int address = ssidNameBegin; address <= ssidNameEnd; address++) {
-//    yield();
-//    value = EEPROM.read(address);
-//    if (value < 100) {
-//      Serial.print(" ");
-//    } if (value < 10) {
-//      Serial.print(" ");
-//    }
-//    Serial.print(value, DEC);
-//    if ((address + 1) % 25 == 0) {
-//      Serial.print("-(address="); if (address < 100) {
-//        Serial.print(" ");
-//      } if (address < 10) {
-//        Serial.print(" ");
-//      } Serial.print(address); Serial.print(")");
-//      Serial.println("");
-//      if (address != ssidNameEnd) {
-//        Serial.print("(address=");
-//        if ((address + 1) < 100) {
-//          Serial.print(" ");
-//        } if ((address + 1) < 10) {
-//          Serial.print(" ");
-//        } Serial.print(address + 1);
-//        Serial.print(")-");
-//      }
-//      yield();
-//    } else {
-//      Serial.print("-");
-//    }
-//  }
-//
-//  Serial.print("\n");
-//  Serial.println("SSID Password Memory");
-//  Serial.print("(address="); if (ssidPasswordBegin < 100) {
-//    Serial.print(" ");
-//  } if (ssidPasswordBegin < 10) {
-//    Serial.print(" ");
-//  } Serial.print(ssidPasswordBegin); Serial.print(")-");
-//  for (int address = ssidPasswordBegin; address <= ssidPasswordEnd; address++) {
-//    yield();
-//    value = EEPROM.read(address);
-//    if (value < 100) {
-//      Serial.print(" ");
-//    } if (value < 10) {
-//      Serial.print(" ");
-//    }
-//    Serial.print(value, DEC);
-//    if ((address + 1) % 25 == 0) {
-//      Serial.print("-(address="); if (address < 100) {
-//        Serial.print(" ");
-//      } if (address < 10) {
-//        Serial.print(" ");
-//      } Serial.print(address); Serial.print(")");
-//      Serial.println("");
-//      if (address != ssidPasswordEnd) {
-//        Serial.print("(address=");
-//        if ((address + 1) < 100) {
-//          Serial.print(" ");
-//        } if ((address + 1) < 10) {
-//          Serial.print(" ");
-//        } Serial.print(address + 1);
-//        Serial.print(")-");
-//      }
-//      yield();
-//    } else {
-//      Serial.print("-");
-//    }
-//  }
-//
-//  Serial.print("\n");
-//  Serial.println("Email Memory");
-//  Serial.print("(address="); if (userEmailBegin < 100) {
-//    Serial.print(" ");
-//  } if (userEmailBegin < 10) {
-//    Serial.print(" ");
-//  } Serial.print(userEmailBegin); Serial.print(")-");
-//  for (int address = userEmailBegin; address <= userEmailEnd; address++) {
-//    yield();
-//    value = EEPROM.read(address);
-//    if (value < 100) {
-//      Serial.print(" ");
-//    } if (value < 10) {
-//      Serial.print(" ");
-//    }
-//    Serial.print(value, DEC);
-//    if ((address + 1) % 25 == 0) {
-//      Serial.print("-(address="); if (address < 100) {
-//        Serial.print(" ");
-//      } if (address < 10) {
-//        Serial.print(" ");
-//      } Serial.print(address); Serial.print(")");
-//      Serial.println("");
-//      if (address != userEmailEnd) {
-//        Serial.print("(address=");
-//        if ((address + 1) < 100) {
-//          Serial.print(" ");
-//        } if ((address + 1) < 10) {
-//          Serial.print(" ");
-//        } Serial.print(address + 1);
-//        Serial.print(")-");
-//      }
-//      yield();
-//    } else {
-//      Serial.print("-");
-//    }
-//  }
-//  EEPROM.end();
-//}
-//
+
+void Memory::print() {
+  Serial.println("\nMemory\n");
+  Serial.printf("Flash chip ID: %d\n", ESP.getFlashChipId());
+  Serial.printf("Flash chip size (in bytes): %d\n", ESP.getFlashChipSize());
+  Serial.printf("Flash chip speed (in Hz): %d\n", ESP.getFlashChipSpeed());
+  Serial.print("Memory Total Size (EEPROM):"); Serial.println(memorySize);
+  yield();
+
+  Serial.print("\n");
+  Serial.print("Email Memory");       Serial.print(" from " );  Serial.print(userEmailBegin);             Serial.print(" to "); Serial.println(userEmailEnd);
+  Serial.print("Serial Number Memory"); Serial.print(" from " );  Serial.print(serialNumberBegin);          Serial.print(" to "); Serial.println(serialNumberEnd);
+  Serial.print("Drink Alarm Memory");   Serial.print(" from " );  Serial.print(drinkAlarmPositionsBegin);   Serial.print(" to "); Serial.println(drinkAlarmPositionsEnd);
+  Serial.print("Meal Alarm Memory");    Serial.print(" from " );  Serial.print(mealAlarmPositionsBegin);    Serial.print(" to "); Serial.println(mealAlarmPositionsEnd);
+  Serial.print("Cleaning Alarm Memory"); Serial.print(" from " );  Serial.print(cleaningAlarmPositionsBegin); Serial.print(" to "); Serial.println(cleaningAlarmPositionsEnd);
+  Serial.print("Data Memory");          Serial.print(" from " );  Serial.print(dataMemoryBegin);            Serial.print(" to "); Serial.println(dataMemoryEnd);
+  Serial.print("Water Memory Size ");   Serial.println(_drinkSize);
+  int memUsada = userEmailSpace + serialNumberSpace + drinkAlarmPositions * drinkAlarmPositionsSize + mealAlarmPositions * mealAlarmPositionsSize + cleaningAlarmPositions * cleaningAlarmPositionsSize + dataMemorySize;
+  Serial.print("\nMemoria Total Usada: ");  Serial.print(memUsada); Serial.print(" - "); Serial.print(((double)memUsada) / 4096, 1); Serial.println("%");
+  Serial.print("Memoria Total Livre: ");  Serial.print("4096 - memUsada");
+
+  yield();
+  uint8_t value = 0;
+
+
+  Serial.print("\n");
+  Serial.println("Email Memory");
+  Serial.print("(address="); if (userEmailBegin < 100) {
+    Serial.print(" ");
+  } if (userEmailBegin < 10) {
+    Serial.print(" ");
+  } Serial.print(userEmailBegin); Serial.print(")-");
+  for (int address = userEmailBegin; address <= userEmailEnd; address++) {
+    yield();
+    value = eeprom_read(address);
+    if (value < 100) {
+      Serial.print(" ");
+    } if (value < 10) {
+      Serial.print(" ");
+    }
+    Serial.print(value, DEC);
+    if ((address + 1) % 32 == 0) {
+      Serial.print("-(address="); if (address < 100) {
+        Serial.print(" ");
+      } if (address < 10) {
+        Serial.print(" ");
+      } Serial.print(address); Serial.print(")");
+      Serial.println("");
+      if (address != userEmailEnd) {
+        Serial.print("(address=");
+        if ((address + 1) < 100) {
+          Serial.print(" ");
+        } if ((address + 1) < 10) {
+          Serial.print(" ");
+        } Serial.print(address + 1);
+        Serial.print(")-");
+      }
+      yield();
+    } else {
+      Serial.print("-");
+    }
+  }
+
+  Serial.print("\n");
+  Serial.println("Serial Number Memory");
+  Serial.print("(address="); if (serialNumberBegin < 100) {
+    Serial.print(" ");
+  } if (serialNumberBegin < 10) {
+    Serial.print(" ");
+  } Serial.print(serialNumberBegin); Serial.print(")-");
+  for (int address = serialNumberBegin; address <= serialNumberEnd; address++) {
+    yield();
+    value = eeprom_read(address);
+    if (value < 100) {
+      Serial.print(" ");
+    } if (value < 10) {
+      Serial.print(" ");
+    }
+    Serial.print(value, DEC);
+    if ((address + 1) % 32 == 0) {
+      Serial.print("-(address="); if (address < 100) {
+        Serial.print(" ");
+      } if (address < 10) {
+        Serial.print(" ");
+      } Serial.print(address); Serial.print(")");
+      Serial.println("");
+      if (address != serialNumberEnd) {
+        Serial.print("(address=");
+        if ((address + 1) < 100) {
+          Serial.print(" ");
+        } if ((address + 1) < 10) {
+          Serial.print(" ");
+        } Serial.print(address + 1);
+        Serial.print(")-");
+      }
+      yield();
+    } else {
+      Serial.print("-");
+    }
+  }
+  //----
+  Serial.print("\n");
+  Serial.println("Drink Alarm Memory");
+  Serial.print("(address="); if (drinkAlarmPositionsBegin < 100) {
+    Serial.print(" ");
+  } if (drinkAlarmPositionsBegin < 10) {
+    Serial.print(" ");
+  } Serial.print(drinkAlarmPositionsBegin); Serial.print(")-");
+  for (int address = drinkAlarmPositionsBegin; address <= drinkAlarmPositionsEnd; address++) {
+    yield();
+    value = eeprom_read(address);
+    if (value < 100) {
+      Serial.print(" ");
+    } if (value < 10) {
+      Serial.print(" ");
+    }
+    Serial.print(value, DEC);
+    if ((address + 1) % 32 == 0) {
+      Serial.print("-(address="); if (address < 100) {
+        Serial.print(" ");
+      } if (address < 10) {
+        Serial.print(" ");
+      } Serial.print(address); Serial.print(")");
+      Serial.println("");
+      if (address != drinkAlarmPositionsEnd) {
+        Serial.print("(address=");
+        if ((address + 1) < 100) {
+          Serial.print(" ");
+        } if ((address + 1) < 10) {
+          Serial.print(" ");
+        } Serial.print(address + 1);
+        Serial.print(")-");
+      }
+      yield();
+    } else {
+      Serial.print("-");
+    }
+  }
+  //----
+
+  //----
+  Serial.print("\n");
+  Serial.println("Meal Alarm Memory");
+  Serial.print("(address="); if (mealAlarmPositionsBegin < 100) {
+    Serial.print(" ");
+  } if (mealAlarmPositionsBegin < 10) {
+    Serial.print(" ");
+  } Serial.print(mealAlarmPositionsBegin); Serial.print(")-");
+  for (int address = mealAlarmPositionsBegin; address <= mealAlarmPositionsEnd; address++) {
+    yield();
+    value = eeprom_read(address);
+    if (value < 100) {
+      Serial.print(" ");
+    } if (value < 10) {
+      Serial.print(" ");
+    }
+    Serial.print(value, DEC);
+    if ((address + 1) % 32 == 0) {
+      Serial.print("-(address="); if (address < 100) {
+        Serial.print(" ");
+      } if (address < 10) {
+        Serial.print(" ");
+      } Serial.print(address); Serial.print(")");
+      Serial.println("");
+      if (address != mealAlarmPositionsEnd) {
+        Serial.print("(address=");
+        if ((address + 1) < 100) {
+          Serial.print(" ");
+        } if ((address + 1) < 10) {
+          Serial.print(" ");
+        } Serial.print(address + 1);
+        Serial.print(")-");
+      }
+      yield();
+    } else {
+      Serial.print("-");
+    }
+  }
+
+  Serial.print("\n");
+  Serial.println("Cleaning Alarm Memory");
+  Serial.print("(address="); if (cleaningAlarmPositionsBegin < 100) {
+    Serial.print(" ");
+  } if (cleaningAlarmPositionsBegin < 10) {
+    Serial.print(" ");
+  } Serial.print(userEmailBegin); Serial.print(")-");
+  for (int address = cleaningAlarmPositionsBegin; address <= cleaningAlarmPositionsEnd; address++) {
+    yield();
+    value = eeprom_read(address);
+    if (value < 100) {
+      Serial.print(" ");
+    } if (value < 10) {
+      Serial.print(" ");
+    }
+    Serial.print(value, DEC);
+    if ((address + 1) % 32 == 0) {
+      Serial.print("-(address="); if (address < 100) {
+        Serial.print(" ");
+      } if (address < 10) {
+        Serial.print(" ");
+      } Serial.print(address); Serial.print(")");
+      Serial.println("");
+      if (address != cleaningAlarmPositionsEnd) {
+        Serial.print("(address=");
+        if ((address + 1) < 100) {
+          Serial.print(" ");
+        } if ((address + 1) < 10) {
+          Serial.print(" ");
+        } Serial.print(address + 1);
+        Serial.print(")-");
+      }
+      yield();
+    } else {
+      Serial.print("-");
+    }
+  }
+
+
+}
+
 void Memory::printData() {
   uint8_t value = 0;
   Serial.println("\nData Memory");
@@ -484,7 +519,7 @@ void Memory::printData() {
     Serial.print(" ");
   } if (dataMemoryBegin < 10) {
     Serial.print(" ");
-  } 
+  }
   Serial.print(dataMemoryBegin);
   Serial.print(")(Position=  1)");
   for (int address = dataMemoryBegin; address <= dataMemoryEnd; address++) {
@@ -498,33 +533,33 @@ void Memory::printData() {
     Serial.print(value, DEC);
 
     if ((address + 1 - dataMemoryBegin) % _drinkSize == 0) {
-      Serial.print("-(address="); 
+      Serial.print("-(address=");
       if (address < 100) {
         Serial.print(" ");
-      } 
+      }
       if (address < 10) {
         Serial.print(" ");
-      } 
-      Serial.print(address); 
+      }
+      Serial.print(address);
       Serial.println(")");
       if (address != dataMemoryEnd) {
         Serial.print("(address="); if (address < 1000) {
           Serial.print(" ");
-        } 
+        }
         if (address < 100) {
           Serial.print(" ");
-        } 
+        }
         if (address < 10) {
           Serial.print(" ");
-        } 
+        }
         Serial.print(address + 1);
-        Serial.print(")(Position="); 
+        Serial.print(")(Position=");
         if ((2 + (address - dataMemoryBegin) / _drinkSize) < 100) {
           Serial.print(" ");
         } if ((2 + (address - dataMemoryBegin) / _drinkSize) < 10) {
           Serial.print(" ");
-        } 
-        Serial.print(2 + (address - dataMemoryBegin) / _drinkSize); 
+        }
+        Serial.print(2 + (address - dataMemoryBegin) / _drinkSize);
         Serial.print(")");
       }
       yield();
@@ -570,18 +605,19 @@ void Memory::clearDataMemory() {
 //
 //
 //void Memory::getUserEmail(char email[]) {
-//  yield();
-//  EEPROM.begin(memorySize);
 //  int i = 0;
+//
+//
+//
+//
 //  do {
 //    yield();
 //    email[i] = (char)EEPROM.read(userEmailBegin + i);
 //    i++;
 //  } while ((char)EEPROM.read(userEmailBegin + i) != '\0');
 //  email[i] = (char)EEPROM.read(userEmailBegin + i);
-//  EEPROM.end();
 //}
-//
+////
 //byte Memory::getUserEmailSize() {
 //  yield();
 //  EEPROM.begin(memorySize);
