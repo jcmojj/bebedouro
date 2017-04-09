@@ -17,8 +17,8 @@
 #define cleaningAlarmPositions      32
 
 
-
-#define userEmailBegin              0
+#define infoByteBegin               0
+#define userEmailBegin              infoByteBegin
 #define userEmailEnd                (userEmailBegin+userEmailSpace-1)
 #define serialNumberBegin           (userEmailEnd+1)
 #define serialNumberEnd             (serialNumberBegin+serialNumberSpace-1)
@@ -28,6 +28,7 @@
 #define mealAlarmPositionsEnd       (mealAlarmPositionsBegin+mealAlarmPositions*mealAlarmPositionsSize-1)
 #define cleaningAlarmPositionsBegin (mealAlarmPositionsEnd+1)
 #define cleaningAlarmPositionsEnd   (cleaningAlarmPositionsBegin+cleaningAlarmPositions*cleaningAlarmPositionsSize-1)
+#define infoByteEnd                 cleaningAlarmPositionsEnd
 
 #define freeSpace dataMemoryBegin -  cleaningAlarmPositionsEnd+1
 
@@ -47,16 +48,19 @@ class Memory{
   public:
   
     Memory(Drink &drink, byte drinkSize, RtcDS3231<TwoWire> &rtc);
-    void memoryTest();
-    unsigned char eeprom_read(const unsigned int address);
-    void eeprom_write(const unsigned int address, const unsigned char data);
+    char eeprom_read_char(const unsigned int address);
+    byte eeprom_read_byte(const unsigned int address);
+    void eeprom_write_char(const unsigned int address, const char data);
+    void eeprom_write_byte(const unsigned int address, const byte data);
 
 
 //    void saveDrinkAtMemory(); // fazer lembrando de apagar memoria caso esteja cheia
 //    void lastDrinkWasSentToServerWithSucess(); //fazer
 //    byte getNextDrinkToSendToServer(); //fazer
 //    //lembrar de usar o ano ou o tipo de dado para alternar confirmacao de posicao --> trabalhoso --> por ultimo
-//    
+//  
+    void memoryTest();
+    void cleanInfo();   
     void clearMemory();
     void clearDataMemory();
 //    void clearDrinkMemoryAtPosition(byte position);
@@ -75,7 +79,8 @@ class Memory{
 //    byte getNextPositionToCleanDrink();
 //    byte getNextPositionToReadDrink();
 //
-    char* readBytes(const unsigned int address, uint8_t count, char * dest); //void getUserEmail(char email[]);
+    char* readBytes(const unsigned int address, uint8_t count, char * dest,int limit); //void getUserEmail(char email[]);
+    bool writeBytes(unsigned int address, char * dest, int size, int limit);
 //    void setUserEmail(const char email[]);
 //    byte getUserEmailSize();  
 //

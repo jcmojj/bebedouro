@@ -2,7 +2,7 @@
 #include "Memory.h"
 
 // CONNECTIONS:
-// DS3231 SDA --> SDA - d2
+// DS3231 SDA --> SDA - d2dsd
 // DS3231 SCL --> SCL - d1
 // DS3231 VCC --> 3.3v or 5v
 // DS3231 GND --> GND
@@ -79,19 +79,64 @@ void setup ()
     rtc.Enable32kHzPin(false);
     rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone); 
 
-    memory.eeprom_write(0,5);
+    memory.eeprom_write_char(0,5);
 
-//    Serial.print("ep1026: "); Serial.print(memory.eeprom_read(1026));
+    Serial.print("ep1026: "); Serial.print(memory.eeprom_read_char(1026));
 //    memory.memoryTest();
-      char teste[100];
-//    Serial.print("\nbytes: "); Serial.write(memory.readBytes(70,10));
-//    Serial.print("\nbytes: "); Serial.println(memory.readBytes(48,64,&teste[0]));
-//for(byte i =1;i<65;i++){
-//  Serial.print("\nPosicoes="); Serial.print(i);
-//  Serial.print("\nbytes: "); Serial.println(memory.readBytes(48,i,&teste[0]));
+//      char teste[200];
+////    Serial.print("\nbytes: "); Serial.write(memory.readBytes(70,10));
+////    Serial.print("\nbytes: "); Serial.println(memory.readBytes(48,64,&teste[0]));
+//for(byte i =1;i<130;i++){
+//  Serial.print("\nPosicoes="); Serial.print(i+48-1);
+//  Serial.print("\nbytes: "); Serial.println(memory.readBytes(48,i,&teste[0],200));
 //}
+// memory.memoryTest();
+ 
+// String teste = "123456789112345678921234567893123456789qwertyuiopasdfghjklzxcvbnm1234567890qwertyuiop0987654321lkjhgfdsa12345zxcvb67890nm,.123456789112345678921234567893123456789qwertyuiopasdfghjklzxcvbnm1234567890qwertyuiop0987654321lkjhgfdsa12345zxcvb67890nm,.";
+//  char buffer[250];
+//  char teste[250];
+//  Serial.print("\nbytes1: "); Serial.println(memory.readBytes(48,100,&teste[0],101));
 
-    char email[] = "jcmojj@gmail.com";
+//  teste[0] = 'j';
+//  teste[1] = 'o';
+//  teste[2] = 's';
+//  teste[3] = 'e';
+//  teste[4] = 'j';
+//  teste[5] = 'o';
+//  teste[6] = 's';
+//  teste[7] = 'e';
+//  teste[8] = '\0';
+
+
+//memory.cleanInfo();
+char email[userEmailSpace] = "jcmojj@gmail.com";
+Serial.print("Size: ");Serial.println(sizeof(email));
+memory.writeBytes(0,&email[0],sizeof(email),userEmailSpace);
+
+char buffer[userEmailSpace];
+Serial.print("\nreadBytes: ");  Serial.print(memory.readBytes(0,sizeof(email),&email[0],userEmailSpace));
+Serial.print("\nreadByte: ");   
+for(int i = 0; i<userEmailSpace;i++){
+  Serial.print(memory.eeprom_read_byte(i));
+}
+Serial.print("\nreadChar: ");   
+for(int i = 0; i<userEmailSpace;i++){
+  Serial.print(memory.eeprom_read_char(i));
+}
+
+
+
+//char teste[] = "123456789112345678921234567893123456789qwertyuiopasdfghjklzxcvbnm1234567890qwertyuiop0987654321lkjhgfdsa12345zxcvb67890nm,.123456789112345678921234567893123456789qwertyuiopasdfghjklzxcvbnm1234567890qwertyuiop0987654321lkjhgfdsa12345zxcvb67890nm,.";
+//  memory.writeBytes(0, &teste[0],55,64);
+//  Serial.print("\nPrint: "); Serial.println(memory.readBytes(0,64,&buffer[0],64));
+//  memory.print();
+////  memory.writeBytes(48, 2, &teste[0]);
+//  
+//  Serial.print("\nPosicoes="); Serial.print(2);
+//  Serial.print("\nbytes2: "); Serial.println(memory.readBytes(0,100,&teste[0]));
+//    Serial.print("\nPosicoes="); Serial.print(2);
+//  Serial.print("\nbytes3: "); Serial.println(memory.readBytes(0,100,&teste[0]));
+//    char email[] = "jcmojj@gmail.com";
     
     
 }
