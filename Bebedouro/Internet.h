@@ -30,6 +30,7 @@ class Internet{
     byte clearSendCounter();
     bool checkSendCounter();
     void loop();
+    void jsonTest();
 
   private:
     WebSocketsClient *_webSocket;

@@ -2,7 +2,9 @@
 
 
 Memory::Memory(Drink &drink, byte drinkSize, RtcDS3231<TwoWire> &rtc) {
-  
+//  Wire.begin(AT24C32_ADDRESS);
+//  Serial.begin(115200);
+//  delay(3000);
   _drink = &drink;
   _drinkSize = drinkSize;
   _rtc = &rtc;
@@ -21,19 +23,19 @@ void Memory::memoryTest() {
     Serial.print(" - Valor Recuperado: "); Serial.println((byte)eeprom_read_char(address));
     valor++;
   }
-//  Serial.println("RECUPERANDO");
-//  for (int address = 0; address < 4096; address++) {
-//    Serial.print("Address: "); Serial.print(address);
-//    Serial.print(" - Valor Salvo: "); Serial.print(valor);
-//    Serial.print(" - Valor Recuperado: "); Serial.println((byte)eeprom_read_char(address));
-//    valor++;
-//  }
-//    memory.printData();
-//    memory.clearDataMemory();
-//    memory.printData();
-//    memory.print();
-//    memory.clearMemory();
-//    memory.print();
+    Serial.println("RECUPERANDO");
+    for (int address = 0; address < 4096; address++) {
+      Serial.print("Address: "); Serial.print(address);
+      Serial.print(" - Valor Salvo: "); Serial.print(valor);
+      Serial.print(" - Valor Recuperado: "); Serial.println((byte)eeprom_read_char(address));
+      valor++;
+    }
+      memory.printData();
+      memory.clearDataMemory();
+      memory.printData();
+      memory.print();
+      memory.clearMemory();
+      memory.print();
 }
 byte Memory::eeprom_read_byte(const unsigned int address) {
   byte rdata = 0;
@@ -44,16 +46,16 @@ byte Memory::eeprom_read_byte(const unsigned int address) {
   Wire.write(lowAddressByte);
   Wire.endTransmission(false);
   Wire.requestFrom(AT24C32_ADDRESS, (uint8_t)1);
-  delay(3);
-  //  if (Wire.available()) {
-  rdata = (byte)Wire.read();
-  //  }
-  delay(3);
+  delay(30);
+  if (Wire.available()) {
+    rdata = (byte)Wire.read();
+  }
+  delay(30);
   return rdata;
 }
 
 char Memory::eeprom_read_char(const unsigned int address) {
-  char rdata = '\0';
+  char rdata = 0xFF;//'\0';
   uint8_t  highAddressByte  = (uint8_t) (address >> 8);
   uint8_t  lowAddressByte   = (uint8_t) (address - ((uint16_t) highAddressByte << 8));
   Wire.beginTransmission(AT24C32_ADDRESS);
@@ -62,16 +64,17 @@ char Memory::eeprom_read_char(const unsigned int address) {
   Wire.endTransmission(false);
   Wire.requestFrom(AT24C32_ADDRESS, (uint8_t)1);
   delay(3);
-  //  if (Wire.available()) {
-  rdata = (char)Wire.read();
-  //  }
+  if (Wire.available()) {
+    delay(3);
+    rdata = (char)Wire.read();
+  }
   delay(3);
   return rdata;
 }
 
 void Memory::eeprom_write_byte(const unsigned int address, const byte data) {
-  uint8_t  highAddressByte  = (uint8_t) (address >> 8); 
-  uint8_t  lowAddressByte   = (uint8_t) (address - ((uint16_t) highAddressByte << 8)); 
+  uint8_t  highAddressByte  = (uint8_t) (address >> 8);
+  uint8_t  lowAddressByte   = (uint8_t) (address - ((uint16_t) highAddressByte << 8));
   Wire.beginTransmission(AT24C32_ADDRESS);
   Wire.write(highAddressByte);
   Wire.write(lowAddressByte);
@@ -82,64 +85,136 @@ void Memory::eeprom_write_byte(const unsigned int address, const byte data) {
 }
 
 void Memory::eeprom_write_char(const unsigned int address, const char data) {
-  uint8_t  highAddressByte  = (uint8_t) (address >> 8);  
-  uint8_t  lowAddressByte   = (uint8_t) (address - ((uint16_t) highAddressByte << 8)); 
+  uint8_t  highAddressByte  = (uint8_t) (address >> 8);
+  uint8_t  lowAddressByte   = (uint8_t) (address - ((uint16_t) highAddressByte << 8));
   Wire.beginTransmission(AT24C32_ADDRESS);
-  Wire.write(highAddressByte); 
+  Wire.write(highAddressByte);
   Wire.write(lowAddressByte);
   Wire.write(data);
-  delay(3);
+  delay(30);
   Wire.endTransmission();
-  delay(3);
+  delay(30);
 }
+///-------------------
+char* Memory::readBytes(unsigned int end, char * dest, int limit) { //size -> se nao sabe colocar limit
+  //
+  //  uint8_t filledBytes = 0;
+  //  while( (dest[filledBytes] != '\0')&&(filledBytes<limit)&&(filledBytes<size) ){
+  //    Serial.print(filledBytes);Serial.print("-");
+  //    filledBytes++;
+  //  }
+  int address = end;
+  int i = 0;
+  uint8_t  highAddressByte;
+  uint8_t  lowAddressByte;
+  int interation = 0;
+  //  char var;
 
-char* Memory::readBytes(const unsigned int address, uint8_t count, char * dest,int limit){
-  Serial.print("-->BEGIN-READ<--");
-  uint8_t  highAddressByte  = (uint8_t) (address >> 8);  // byte with the four MSBits of the address
-  uint8_t  lowAddressByte   = (uint8_t) (address - ((uint16_t) highAddressByte << 8)); // byte with the eight LSbits of the address  
-  Wire.beginTransmission(AT24C32_ADDRESS);   // Initialize the Tx buffer
-  Wire.write(highAddressByte); // MSB
-  Wire.write(lowAddressByte); // LSB  
-  Wire.endTransmission(false);       // Send the Tx buffer, but send a restart to keep connection alive
-  uint8_t i = 0;
-  Wire.requestFrom(AT24C32_ADDRESS, (uint8_t)count);  // Read bytes from slave register address
-  
-  Serial.print("\nRead:");
-  while (Wire.available() && i < 32 ) {
-    delay(5);
-    dest[i] = (char)Wire.read();
-    delay(5);
-    dest[i+1] = '\0';
-    Serial.print(dest[i]);
-//    Serial.print("i(");Serial.print(i); Serial.print("): "); Serial.print(dest[i]); Serial.print(" - ");
+  highAddressByte  = (uint8_t) (address >> 8);  // byte with the four MSBits of the address
+  lowAddressByte   = (uint8_t) (address - ((uint16_t) highAddressByte << 8)); // byte with the eight LSbits of the address
+  Wire.beginTransmission(AT24C32_ADDRESS);
+  Wire.write(highAddressByte);
+  Wire.write(lowAddressByte);
+  Wire.endTransmission(false);
+  Wire.requestFrom(AT24C32_ADDRESS, (uint8_t)32);
+
+  while (i < limit) {
+
+
+    Serial.print("i:"); Serial.print(i);
+    Serial.print(" limit:"); Serial.print(limit);
+    Serial.print(" address: "); Serial.print(address);
+    delay(3);
+    if ( Wire.available() ) {
+//      delay(50);
+      //      byte zoado = (byte)Wire.read();
+      //      Serial.print("byte:(");Serial.print(zoado);Serial.print(")");
+      //      dest[i] = (char)zoado;
+      dest[i] = (char)Wire.read();
+      dest[i + 1] = '\0';
+      Serial.print(" value:("); Serial.print(dest[i]); Serial.print(") ");
+      delay(3);
+    } else {
+      Serial.print("MERDA!");
+    }
+    if ((i + 1) % 32 == 0) {
+      //finish
+      delay(5);
+      Wire.endTransmission();
+      delay(5);
+      printEmail();
+      interation++;
+      address = address + 32;
+      //start
+      highAddressByte  = (uint8_t) (address >> 8);  // byte with the four MSBits of the address
+      lowAddressByte   = (uint8_t) (address - ((uint16_t) highAddressByte << 8)); // byte with the eight LSbits of the address
+      Wire.beginTransmission(AT24C32_ADDRESS);
+      Wire.write(highAddressByte);
+      Wire.write(lowAddressByte);
+      Wire.endTransmission(false);
+      Wire.requestFrom(AT24C32_ADDRESS, (uint8_t)32);
+      delay(5);
+    }
+
     i++;
+    Serial.println("");
   }
-           
-  Serial.print("\nEND: ");
-  if(count > 32 && count < (limit+1) ){
-   readBytes(address+32, count-32, (dest+32),limit);
-  }
-  Serial.print("-->END-READ<--");
+
+  delay(50);
+  //  Wire.endTransmission();
+  delay(50);
   return dest;
 }
 
+
+//char* Memory::readBytes(const unsigned int address, char * dest,int limit){
+//  uint8_t count  = 64;
+//  Serial.print("-->BEGIN-READ<--");
+//  uint8_t  highAddressByte  = (uint8_t) (address >> 8);  // byte with the four MSBits of the address
+//  uint8_t  lowAddressByte   = (uint8_t) (address - ((uint16_t) highAddressByte << 8)); // byte with the eight LSbits of the address
+//  Wire.beginTransmission(AT24C32_ADDRESS);   // Initialize the Tx buffer
+//  Wire.write(highAddressByte); // MSB
+//  Wire.write(lowAddressByte); // LSB
+//  Wire.endTransmission(false);       // Send the Tx buffer, but send a restart to keep connection alive
+//  uint8_t i = 0;
+//  Wire.requestFrom(AT24C32_ADDRESS, (uint8_t)count);  // Read bytes from slave register address
+//
+//  Serial.print("\nRead:");
+//  while (Wire.available() && i < 32 ) {
+//    delay(5);
+//    dest[i] = (char)Wire.read();
+//    delay(5);
+//    dest[i+1] = '\0';
+//    Serial.print(dest[i]);
+////    Serial.print("i(");Serial.print(i); Serial.print("): "); Serial.print(dest[i]); Serial.print(" - ");
+//    i++;
+//  }
+//
+//  Serial.print("\nEND: ");
+//  if(count > 32 && count < (limit+1) ){
+//   readBytes(address+32, (dest+32),limit);
+//  }
+//  Serial.print("-->END-READ<--");
+//  return dest;
+//}
+//--------------------------------
 //  memory.writeBytes(48, &teste[0],40);
 //bool Memory::writeBytes(const unsigned int address, char * dest, byte size, byte limit){
 //  Serial.print("\n\n-->BEGIN-WRITE<--\n - Count:");
 //  Serial.print("Address:");Serial.print(address); Serial.print(" - limit:");Serial.println(limit);
 //  uint8_t count = 0;
-//  while( (dest[count] != '\0') && (count<limit) &&(count<size) ){   
+//  while( (dest[count] != '\0') && (count<limit) &&(count<size) ){
 //     Serial.print(count);Serial.print("-");
 //    count++;
 //  }
 //
 //  Serial.println("");
 //  uint8_t  highAddressByte  = (uint8_t) (address >> 8);  // byte with the four MSBits of the address
-//  uint8_t  lowAddressByte   = (uint8_t) (address - ((uint16_t) highAddressByte << 8)); // byte with the eight LSbits of the address  
+//  uint8_t  lowAddressByte   = (uint8_t) (address - ((uint16_t) highAddressByte << 8)); // byte with the eight LSbits of the address
 //  Wire.beginTransmission(AT24C32_ADDRESS);   // Initialize the Tx buffer
 //  Wire.write(highAddressByte); // MSB
-//  Wire.write(lowAddressByte); // LSB  
-//  
+//  Wire.write(lowAddressByte); // LSB
+//
 //  Serial.print("\nWire.write:    ");
 //  for(byte i = 0;((i<count)&&(i<15));i++){
 //    Serial.print(dest[i]);
@@ -157,13 +232,14 @@ char* Memory::readBytes(const unsigned int address, uint8_t count, char * dest,i
 //  Serial.print("\n--> END-WRITE<--\n");
 //}
 
-bool Memory::writeBytes( unsigned int address, char * dest, int size, int limit){//size -> se nao sabe colocar limit
+bool Memory::writeBytes( unsigned int address, char * dest, int limit) { //size -> se nao sabe colocar limit //// limit = size 64
 
   uint8_t filledBytes = 0;
-  while( (dest[filledBytes] != '\0')&&(filledBytes<limit)&&(filledBytes<size) ){   
-    Serial.print(filledBytes);Serial.print("-");
+  while ( (dest[filledBytes] != '\0') && (filledBytes < limit) ) {
+    Serial.print(filledBytes); Serial.print("-");
     filledBytes++;
   }
+  Serial.println("");
   
   int i = 0;
   uint8_t  highAddressByte;
@@ -171,86 +247,94 @@ bool Memory::writeBytes( unsigned int address, char * dest, int size, int limit)
   int interation = 0;
 
   highAddressByte  = (uint8_t) (address >> 8);  // byte with the four MSBits of the address
-  lowAddressByte   = (uint8_t) (address - ((uint16_t) highAddressByte << 8)); // byte with the eight LSbits of the address  
+  lowAddressByte   = (uint8_t) (address - ((uint16_t) highAddressByte << 8)); // byte with the eight LSbits of the address
   Wire.beginTransmission(AT24C32_ADDRESS);
   Wire.write(highAddressByte);
-  Wire.write(lowAddressByte); 
-  
-  while(i<limit){
-    if((i+1)%15 == 0){
+  Wire.write(lowAddressByte);
+
+  while (i < limit) {
+    delay(3);
+    Serial.print("i: ");Serial.print(i);
+    Serial.print(" -address-:");Serial.print(address);
+    Serial.print(" -dest[i]:");Serial.print(dest[i]);
+    Serial.print(" -filledBytes:");Serial.println(filledBytes);
+    
+    if (i < filledBytes) {
+//      Serial.print("<");
+//      Serial.print(dest[i]);
+      Wire.write((byte)dest[i]);
+    } else {
+//      Serial.print(">");
+//      Serial.print('0');
+      Wire.write('\0');
+    }
+    if ((i + 1) % 15 == 0) {
       //finish
       delay(5);
       Wire.endTransmission();
-      delay(10);
-      interation++;   
-      address = address + interation*15;
+      delay(5);
+      printEmail();
+      interation++;
+      address = address + 15;
       //start
       highAddressByte  = (uint8_t) (address >> 8);  // byte with the four MSBits of the address
-      lowAddressByte   = (uint8_t) (address - ((uint16_t) highAddressByte << 8)); // byte with the eight LSbits of the address  
+      lowAddressByte   = (uint8_t) (address - ((uint16_t) highAddressByte << 8)); // byte with the eight LSbits of the address
       Wire.beginTransmission(AT24C32_ADDRESS);
       Wire.write(highAddressByte);
-      Wire.write(lowAddressByte);    
+      Wire.write(lowAddressByte);
     }
-    if(i<filledBytes){
-      Serial.print("<");
-      Serial.print(dest[i]);
-      Wire.write((char)dest[i]);  
-    }else{
-      Serial.print(">");
-      Serial.print('0');
-      Wire.write('\0');        
-    }
-    i++;    
+
+    i++;
   }
   delay(5);
   Wire.endTransmission();
-  delay(10); 
-  
-  
-  
-//  
-//  Serial.print("\n\n-->BEGIN-WRITE<--\n - Count:");
-//  Serial.print("Address:");Serial.print(address); Serial.print(" - limit:");Serial.println(limit);
-//
-//  uint8_t filledBytes = 0;
-//  while( (dest[filledBytes] != '\0')&&(filledBytes<limit)&&(filledBytes<size) ){   
-//     Serial.print(filledBytes);Serial.print("-");
-//    filledBytes++;
-//  }
-//  if(size>j){
-//    filledBytes = size;
-//  }
-//
-//  uint8_t  highAddressByte  = (uint8_t) (address >> 8);  // byte with the four MSBits of the address
-//  uint8_t  lowAddressByte   = (uint8_t) (address - ((uint16_t) highAddressByte << 8)); // byte with the eight LSbits of the address  
-//  Wire.beginTransmission(AT24C32_ADDRESS);
-//  Wire.write(highAddressByte);
-//  Wire.write(lowAddressByte);
-//
-//  
-//  Serial.print("\nWire.write:    ");
-//  for(byte i = 0;((i<limit)&&(i<15));i++){
-//    if(i<filledBytes{
-//      Serial.print("<");
-//      Serial.print(dest[i]);
-//      Wire.write(dest[i]);  
-//    }else{
-//      Serial.print(">");
-//      Serial.print('0');
-//      Wire.write('\0');        
-//    }  
-//  }
-//  delay(5);
-//  Wire.endTransmission();
-//  delay(10);
-////  char tont[200];
-////  Serial.print("ResultadoInt:   ");Serial.print(readBytes(0, 100, &tont[0],limit));
-////  Serial.print("\nbytesint: "); Serial.println(readBytes(48,60,&teste[0]));
-//  
-//  if(count>15 ){
-//   writeBytes((address+15), (dest+15), (size-15), (limit-15) );
-//  }
-//  Serial.print("\n--> END-WRITE<--\n");
+  delay(5);
+
+
+
+  //
+  //  Serial.print("\n\n-->BEGIN-WRITE<--\n - Count:");
+  //  Serial.print("Address:");Serial.print(address); Serial.print(" - limit:");Serial.println(limit);
+  //
+  //  uint8_t filledBytes = 0;
+  //  while( (dest[filledBytes] != '\0')&&(filledBytes<limit)&&(filledBytes<size) ){
+  //     Serial.print(filledBytes);Serial.print("-");
+  //    filledBytes++;
+  //  }
+  //  if(size>j){
+  //    filledBytes = size;
+  //  }
+  //
+  //  uint8_t  highAddressByte  = (uint8_t) (address >> 8);  // byte with the four MSBits of the address
+  //  uint8_t  lowAddressByte   = (uint8_t) (address - ((uint16_t) highAddressByte << 8)); // byte with the eight LSbits of the address
+  //  Wire.beginTransmission(AT24C32_ADDRESS);
+  //  Wire.write(highAddressByte);
+  //  Wire.write(lowAddressByte);
+  //
+  //
+  //  Serial.print("\nWire.write:    ");
+  //  for(byte i = 0;((i<limit)&&(i<15));i++){
+  //    if(i<filledBytes{
+  //      Serial.print("<");
+  //      Serial.print(dest[i]);
+  //      Wire.write(dest[i]);
+  //    }else{
+  //      Serial.print(">");
+  //      Serial.print('0');
+  //      Wire.write('\0');
+  //    }
+  //  }
+  //  delay(5);
+  //  Wire.endTransmission();
+  //  delay(10);
+  ////  char tont[200];
+  ////  Serial.print("ResultadoInt:   ");Serial.print(readBytes(0, 100, &tont[0],limit));
+  ////  Serial.print("\nbytesint: "); Serial.println(readBytes(48,60,&teste[0]));
+  //
+  //  if(count>15 ){
+  //   writeBytes((address+15), (dest+15), (size-15), (limit-15) );
+  //  }
+  //  Serial.print("\n--> END-WRITE<--\n");
 }
 
 
@@ -459,31 +543,9 @@ bool Memory::writeBytes( unsigned int address, char * dest, int size, int limit)
 //  }
 //  Serial.println("Memoria Limpa");
 //}
-
-void Memory::print() {
-  Serial.println("\nMemory\n");
-  Serial.printf("Flash chip ID: %d\n", ESP.getFlashChipId());
-  Serial.printf("Flash chip size (in bytes): %d\n", ESP.getFlashChipSize());
-  Serial.printf("Flash chip speed (in Hz): %d\n", ESP.getFlashChipSpeed());
-  Serial.print("Memory Total Size (EEPROM):"); Serial.println(memorySize);
-  yield();
-
-  Serial.print("\n");
-  Serial.print("Email Memory");       Serial.print(" from " );  Serial.print(userEmailBegin);             Serial.print(" to "); Serial.println(userEmailEnd);
-  Serial.print("Serial Number Memory"); Serial.print(" from " );  Serial.print(serialNumberBegin);          Serial.print(" to "); Serial.println(serialNumberEnd);
-  Serial.print("Drink Alarm Memory");   Serial.print(" from " );  Serial.print(drinkAlarmPositionsBegin);   Serial.print(" to "); Serial.println(drinkAlarmPositionsEnd);
-  Serial.print("Meal Alarm Memory");    Serial.print(" from " );  Serial.print(mealAlarmPositionsBegin);    Serial.print(" to "); Serial.println(mealAlarmPositionsEnd);
-  Serial.print("Cleaning Alarm Memory"); Serial.print(" from " );  Serial.print(cleaningAlarmPositionsBegin); Serial.print(" to "); Serial.println(cleaningAlarmPositionsEnd);
-  Serial.print("Data Memory");          Serial.print(" from " );  Serial.print(dataMemoryBegin);            Serial.print(" to "); Serial.println(dataMemoryEnd);
-  Serial.print("Water Memory Size ");   Serial.println(_drinkSize);
-  int memUsada = userEmailSpace + serialNumberSpace + drinkAlarmPositions * drinkAlarmPositionsSize + mealAlarmPositions * mealAlarmPositionsSize + cleaningAlarmPositions * cleaningAlarmPositionsSize + dataMemorySize;
-  Serial.print("\nMemoria Total Usada: ");  Serial.print(memUsada); Serial.print(" - "); Serial.print(((double)memUsada) / 4096, 1); Serial.println("%");
-  Serial.print("Memoria Total Livre: ");  Serial.print("4096 - memUsada");
-
+void Memory::printEmail(){
   yield();
   char value = 0;
-
-
   Serial.print("\n");
   Serial.println("Email Memory");
   Serial.print("(address="); if (userEmailBegin < 100) {
@@ -521,6 +583,33 @@ void Memory::print() {
       Serial.print("-");
     }
   }
+}
+
+void Memory::print() {
+  Serial.println("\nMemory\n");
+  Serial.printf("Flash chip ID: %d\n", ESP.getFlashChipId());
+  Serial.printf("Flash chip size (in bytes): %d\n", ESP.getFlashChipSize());
+  Serial.printf("Flash chip speed (in Hz): %d\n", ESP.getFlashChipSpeed());
+  Serial.print("Memory Total Size (EEPROM):"); Serial.println(memorySize);
+  yield();
+
+  Serial.print("\n");
+  Serial.print("Email Memory");       Serial.print(" from " );  Serial.print(userEmailBegin);             Serial.print(" to "); Serial.println(userEmailEnd);
+  Serial.print("Serial Number Memory"); Serial.print(" from " );  Serial.print(serialNumberBegin);          Serial.print(" to "); Serial.println(serialNumberEnd);
+  Serial.print("Drink Alarm Memory");   Serial.print(" from " );  Serial.print(drinkAlarmPositionsBegin);   Serial.print(" to "); Serial.println(drinkAlarmPositionsEnd);
+  Serial.print("Meal Alarm Memory");    Serial.print(" from " );  Serial.print(mealAlarmPositionsBegin);    Serial.print(" to "); Serial.println(mealAlarmPositionsEnd);
+  Serial.print("Cleaning Alarm Memory"); Serial.print(" from " );  Serial.print(cleaningAlarmPositionsBegin); Serial.print(" to "); Serial.println(cleaningAlarmPositionsEnd);
+  Serial.print("Data Memory");          Serial.print(" from " );  Serial.print(dataMemoryBegin);            Serial.print(" to "); Serial.println(dataMemoryEnd);
+  Serial.print("Water Memory Size ");   Serial.println(_drinkSize);
+  int memUsada = userEmailSpace + serialNumberSpace + drinkAlarmPositions * drinkAlarmPositionsSize + mealAlarmPositions * mealAlarmPositionsSize + cleaningAlarmPositions * cleaningAlarmPositionsSize + dataMemorySize;
+  Serial.print("\nMemoria Total Usada: ");  Serial.print(memUsada); Serial.print(" - "); Serial.print(((double)memUsada) / 4096, 1); Serial.println("%");
+  Serial.print("Memoria Total Livre: ");  Serial.print("4096 - memUsada");
+
+  yield();
+  char value = 0;
+
+
+  printEmail();
 
   Serial.print("\n");
   Serial.println("Serial Number Memory");
@@ -749,12 +838,14 @@ void Memory::cleanInfo() {
 
 void Memory::clearMemory() {
   Serial.print("Clean Memory");
-  for (int address = userEmailBegin; address <= dataMemoryEnd; address++) {
-    yield();
-    if (eeprom_read_char(address) != 255) {
-      eeprom_write_char(address, 255);
-    }
-  }
+//  for (int address = userEmailBegin; address <= dataMemoryEnd; address++) {
+//    yield();
+//    if (eeprom_read_char(address) != 255) {
+//      eeprom_write_char(address, 255);
+//    }
+//  }
+cleanInfo();
+clearDataMemory();
 }
 
 void Memory::clearDataMemory() {

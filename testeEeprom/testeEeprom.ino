@@ -91,17 +91,16 @@ void setup() {
   Serial.println("local ip");
   Serial.println(WiFi.localIP());
   /* ----------------------- SETUP - WiFiManager ----------------------- */
-   Serial.println("Fim do WiFi Manager"); 
 //// teste da memoria recebendo alarmes
-//  memory.DrinkAlarmTest();
+  memory.DrinkAlarmTest();
 ////  zerando e preenchendo a memoria
 //  memory.preenchendoDrinksParaTeste();
 
-
+  Serial.println("Fim do WiFi Manager");
 //     webSocket.begin("ws://localhost:8080/EchoChamber/echo", 80);
 //     webSocket.begin("echo.websocket.org", 80, "/echo","arduino");
 //     webSocket.begin("echo.websocket.org", 80, "/echo","arduino");
-//       webSocket.begin("websocket-echo.herokuapp.com", 80, "/","arduino"); //melhor<-----
+       webSocket.begin("websocket-echo.herokuapp.com", 80, "/","arduino"); //melhor
 //webSocket.beginSocketIO("socketio-echo.herokuapp.com", 81, "/","arduino");
 //webSocket.beginSocketIO("socketio-echo.herokuapp.com", 80, "/socket.io/?EIO=3");
 //webSocket.beginSocketIO("socketio-echo.herokuapp.com", 80, "/socket.io/?EIO=3&transport=websocket"); // melhor 2
@@ -120,24 +119,17 @@ void setup() {
 //     webSocket.beginSSL("http://echo.herokuapp.com/", 80, "/","arduino");
  //webSocket.setAuthorization("user", "Password"); // HTTP Basic Authorization
 
-//     webSocket.onEvent(webSocketEvent);<------
+     webSocket.onEvent(webSocketEvent);
 
-//     Serial.print("Fim WebSocket");<------
-//   char emailTeste[] = "jcmojj@gmail.com";
+     Serial.print("Fim WebSocket");
+   char emailTeste[] = "jcmojj@gmail.com";
 //  memory.setUserEmail(emailTeste);
 
-//  memory.print();
+  memory.print();
 //  memory.clearDataMemory();
-//  memory.printData();
+  memory.printData();
 
 //ticker.attach(10, internetcheck);
-
-// Testes Setup
-//memory.memTest();
-//internet.jsonTest();
-
-
-
 }
   /* ------------------------------------------------------------------- */
   /* -----------------------     END - SETUP     ----------------------- */

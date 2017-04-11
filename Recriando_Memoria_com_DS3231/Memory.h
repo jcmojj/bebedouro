@@ -67,6 +67,7 @@ class Memory{
 //
 //    void preenchendoDrinksParaTeste();
     void print();
+    void printEmail();
     void printData();
 //    void printDrinkFromPosition(byte position);
 //    void getDrinkFromPosition(byte position);
@@ -79,8 +80,8 @@ class Memory{
 //    byte getNextPositionToCleanDrink();
 //    byte getNextPositionToReadDrink();
 //
-    char* readBytes(const unsigned int address, uint8_t count, char * dest,int limit); //void getUserEmail(char email[]);
-    bool writeBytes(unsigned int address, char * dest, int size, int limit);
+    char* readBytes(unsigned int address, char * dest, int limit); //void getUserEmail(char email[]);
+    bool writeBytes(unsigned int address, char * dest, int limit);
 //    void setUserEmail(const char email[]);
 //    byte getUserEmailSize();  
 //

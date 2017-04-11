@@ -79,9 +79,9 @@ void setup ()
     rtc.Enable32kHzPin(false);
     rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone); 
 
-    memory.eeprom_write_char(0,5);
-
-    Serial.print("ep1026: "); Serial.print(memory.eeprom_read_char(1026));
+//    memory.eeprom_write_char(0,5);
+//    Serial.print("ep1026: "); Serial.print(memory.eeprom_read_char(1026));
+    
 //    memory.memoryTest();
 //      char teste[200];
 ////    Serial.print("\nbytes: "); Serial.write(memory.readBytes(70,10));
@@ -108,22 +108,180 @@ void setup ()
 //  teste[8] = '\0';
 
 
-//memory.cleanInfo();
-char email[userEmailSpace] = "jcmojj@gmail.com";
+memory.cleanInfo();
+//char email[userEmailSpace+1] = "jcmojj@gmail.aombilbos@gmail.bombeleza@gmail.combostas@gmail.dom";
+char email[userEmailSpace+1] = {
+   0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15,
+  16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+  32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+  48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63
+  };
+char email1[userEmailSpace+1] = {
+   0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15,
+  16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+  };
+char email2[userEmailSpace+1] = {
+  32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+  48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63
+  };
 Serial.print("Size: ");Serial.println(sizeof(email));
-memory.writeBytes(0,&email[0],sizeof(email),userEmailSpace);
+//memory.writeBytes(0,&email[0],userEmailSpace);
 
-char buffer[userEmailSpace];
-Serial.print("\nreadBytes: ");  Serial.print(memory.readBytes(0,sizeof(email),&email[0],userEmailSpace));
-Serial.print("\nreadByte: ");   
-for(int i = 0; i<userEmailSpace;i++){
-  Serial.print(memory.eeprom_read_byte(i));
-}
-Serial.print("\nreadChar: ");   
-for(int i = 0; i<userEmailSpace;i++){
-  Serial.print(memory.eeprom_read_char(i));
-}
+byte err;
+byte counter;
 
+byte mais = 0;
+unsigned int addr = 0;
+Serial.print("\nEx. 1");
+Serial.print("\n\nAddr: "); Serial.print(addr);
+Serial.print("\nMais: "); Serial.print(mais);
+Serial.print("\ncounter: "); Serial.print(counter);
+Serial.print("\nerr: "); Serial.print(err);
+Wire.beginTransmission(AT24C32_ADDRESS);
+  Wire.write ((byte) (addr >> 8));    // high order byte
+  Wire.write ((byte) (addr & 0xFF));  // low-order byte
+Wire.write((email),mais);
+err = Wire.endTransmission ();
+  for (counter = 0; counter < 100; counter++)
+    {
+    delayMicroseconds (300);  // give it a moment
+    Wire.beginTransmission (AT24C32_ADDRESS);
+    Wire.write ((byte) (addr >> 8));    // high order byte
+    Wire.write ((byte) (addr & 0xFF));  // low-order byte
+    err = Wire.endTransmission ();
+    if (err == 0)
+      break;
+    }
+memory.printEmail();
+
+mais = 30;
+addr=addr+mais;
+Serial.print("\nEx. 2");
+Serial.print("\n\nAddr: "); Serial.print(addr);
+Serial.print("\nMais: "); Serial.print(mais);
+Serial.print("\ncounter: "); Serial.print(counter);
+Serial.print("\nerr: "); Serial.print(err);
+Wire.beginTransmission(AT24C32_ADDRESS);
+  Wire.write ((byte) (addr >> 8));    // high order byte
+  Wire.write ((byte) (addr & 0xFF));  // low-order byte
+Wire.write((email+mais),mais);
+err = Wire.endTransmission ();
+  for (counter = 0; counter < 100; counter++)
+    {
+    delayMicroseconds (300);  // give it a moment
+    Wire.beginTransmission (AT24C32_ADDRESS);
+    Wire.write ((byte) (addr >> 8));    // high order byte
+    Wire.write ((byte) (addr & 0xFF));  // low-order byte
+    err = Wire.endTransmission ();
+    if (err == 0)
+      break;
+    }
+memory.printEmail();
+
+
+mais = 30;
+addr=0;
+Serial.print("\nEx. 3");
+Serial.print("\n\nAddr: "); Serial.print(addr);
+Serial.print("\nMais: "); Serial.print(mais);
+Serial.print("\ncounter: "); Serial.print(counter);
+Serial.print("\nerr: "); Serial.print(err);
+Wire.beginTransmission(AT24C32_ADDRESS);
+  Wire.write ((byte) (addr >> 8));    // high order byte
+  Wire.write ((byte) (addr & 0xFF));  // low-order byte
+Wire.write(email1,mais);
+err = Wire.endTransmission ();
+  for (counter = 0; counter < 100; counter++)
+    {
+    delayMicroseconds (300);  // give it a moment
+    Wire.beginTransmission (AT24C32_ADDRESS);
+    Wire.write ((byte) (addr >> 8));    // high order byte
+    Wire.write ((byte) (addr & 0xFF));  // low-order byte
+    err = Wire.endTransmission ();
+    if (err == 0)
+      break;
+    }
+memory.printEmail();
+
+mais = 30;
+addr=0;
+Serial.print("\nEx. 4");
+Serial.print("\n\nAddr: "); Serial.print(addr);
+Serial.print("\nMais: "); Serial.print(mais);
+Serial.print("\ncounter: "); Serial.print(counter);
+Serial.print("\nerr: "); Serial.print(err);
+Wire.beginTransmission(AT24C32_ADDRESS);
+  Wire.write ((byte) (addr >> 8));    // high order byte
+  Wire.write ((byte) (addr & 0xFF));  // low-order byte
+Wire.write(email2,mais);
+err = Wire.endTransmission ();
+  for (counter = 0; counter < 100; counter++)
+    {
+    delayMicroseconds (300);  // give it a moment
+    Wire.beginTransmission (AT24C32_ADDRESS);
+    Wire.write ((byte) (addr >> 8));    // high order byte
+    Wire.write ((byte) (addr & 0xFF));  // low-order byte
+    err = Wire.endTransmission ();
+    if (err == 0)
+      break;
+    }
+memory.printEmail();
+
+
+
+
+char buffer[userEmailSpace+1];
+Serial.print("\nreadBytes: ");  Serial.println(memory.readBytes(0,&buffer[0],userEmailSpace));
+Serial.print("\nEmail: ");  Serial.println(email);
+Serial.print("\nbuffer: ");  Serial.println(buffer);
+//
+////Serial.print("\nreadByte: ");   
+////for(int i = 0; i<userEmailSpace;i++){
+////  Serial.print(memory.eeprom_read_byte(i));
+////}
+//Serial.print("\nreadChar1: ");   
+//for(int i = 0; i<userEmailSpace;i++){
+//  Serial.print(memory.eeprom_read_char(i));
+//  delay(10);
+//}
+//Serial.print("\nreadChar2: ");   
+//for(int i = 0; i<userEmailSpace;i++){
+//  char var = memory.eeprom_read_char(i);
+//  Serial.print(var);
+//  delay(10);
+//}
+//
+//Serial.println("");
+//Serial.print("read(47): ");Serial.println(memory.eeprom_read_char(47));
+//Serial.print("read(48): ");Serial.println(memory.eeprom_read_char(48));
+//Serial.print("read(49): ");Serial.println(memory.eeprom_read_char(49));
+//Serial.print("read(50): ");Serial.println(memory.eeprom_read_char(50));
+//Serial.print("read(51): ");Serial.println(memory.eeprom_read_char(51));
+//Serial.print("read(52): ");Serial.println(memory.eeprom_read_char(52));
+//
+//Serial.print("buffer(47): ");Serial.println(buffer[47]);
+//Serial.print("buffer(48): ");Serial.println(buffer[48]);
+//Serial.print("buffer(49): ");Serial.println(buffer[49]);
+//Serial.print("buffer(50): ");Serial.println(buffer[50]);
+//Serial.print("buffer(51): ");Serial.println(buffer[51]);
+//Serial.print("buffer(52): ");Serial.println(buffer[52]);
+//
+//Serial.print("read(47): ");(memory.eeprom_write_char(47,'k'));
+//Serial.print("read(48): ");(memory.eeprom_write_char(48,'k'));
+//Serial.print("read(49): ");(memory.eeprom_write_char(49,'k'));
+//Serial.print("read(50): ");(memory.eeprom_write_char(50,'k'));
+//Serial.print("read(51): ");(memory.eeprom_write_char(51,'k'));
+//Serial.print("read(52): ");(memory.eeprom_write_char(52,'k'));
+//Serial.print("\nbuffer: ");  Serial.println(buffer);
+//
+//Serial.print("read(47): ");Serial.println(memory.eeprom_read_char(47));
+//Serial.print("read(48): ");Serial.println(memory.eeprom_read_char(48));
+//Serial.print("read(49): ");Serial.println(memory.eeprom_read_char(49));
+//Serial.print("read(50): ");Serial.println(memory.eeprom_read_char(50));
+//Serial.print("read(51): ");Serial.println(memory.eeprom_read_char(51));
+//Serial.print("read(52): ");Serial.println(memory.eeprom_read_char(52));
+//
+//Serial.print("Compare: ");Serial.println(strcmp(email,buffer));
 
 
 //char teste[] = "123456789112345678921234567893123456789qwertyuiopasdfghjklzxcvbnm1234567890qwertyuiop0987654321lkjhgfdsa12345zxcvb67890nm,.123456789112345678921234567893123456789qwertyuiopasdfghjklzxcvbnm1234567890qwertyuiop0987654321lkjhgfdsa12345zxcvb67890nm,.";

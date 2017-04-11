@@ -3,33 +3,70 @@
 
 #include "Arduino.h"
 #include "Drink.h"
-#include <EEPROM.h>
+#include <Wire.h>
+#include <At24c32.h>
 
-#define drinkAlarmPositions 25
-#define mealAlarmPositions 25
+#define drinkAlarmPositionsSize     2
+#define mealAlarmPositionsSize      2
+#define cleaningAlarmPositionsSize  2
+
+#define userEmailSpace          2 * 32
+#define serialNumberSpace       1 * 32
+#define drinkAlarmPositions         32
+#define mealAlarmPositions          32 
+#define cleaningAlarmPositions      32
+
+
+#define infoByteBegin               0
+#define userEmailBegin              infoByteBegin
+#define userEmailEnd                (userEmailBegin+userEmailSpace-1)
+#define serialNumberBegin           (userEmailEnd+1)
+#define serialNumberEnd             (serialNumberBegin+serialNumberSpace-1)
+#define drinkAlarmPositionsBegin    (serialNumberEnd+1)
+#define drinkAlarmPositionsEnd      (drinkAlarmPositionsBegin+drinkAlarmPositions*drinkAlarmPositionsSize-1)
+#define mealAlarmPositionsBegin     (drinkAlarmPositionsEnd+1)
+#define mealAlarmPositionsEnd       (mealAlarmPositionsBegin+mealAlarmPositions*mealAlarmPositionsSize-1)
+#define cleaningAlarmPositionsBegin (mealAlarmPositionsEnd+1)
+#define cleaningAlarmPositionsEnd   (cleaningAlarmPositionsBegin+cleaningAlarmPositions*cleaningAlarmPositionsSize-1)
+#define infoByteEnd                 cleaningAlarmPositionsEnd
+
+#define freeSpace dataMemoryBegin -  cleaningAlarmPositionsEnd+1
+
+#define dataMemoryBegin 1024
+#define dataMemorySize (_drinkSize*255)
+#define dataMemoryEnd (dataMemoryBegin+dataMemorySize-1) // 4083 byte --> pode ir ate 4095
+#define memorySize dataMemoryEnd
+
+//const uint8_t AT24C32_ADDRESS = 0x57;
+
+// -- deletar
+#include <EEPROM.h>
+//#define drinkAlarmPositions 25
+//#define mealAlarmPositions 25
 #define serialNumber 50
-#define ssidName 50
-#define ssidPassword 50
+//#define ssidName 50
+//#define ssidPassword 50
 #define userName 50
 #define userEmail 50
-#define dataMemorySize (_drinkSize*255)
+//#define dataMemorySize (_drinkSize*255)
 
-#define drinkAlarmPositionsBegin 0
-#define drinkAlarmPositionsEnd (drinkAlarmPositionsBegin+drinkAlarmPositions*2-1)
-#define mealAlarmPositionsBegin (drinkAlarmPositionsEnd+1)
-#define mealAlarmPositionsEnd (mealAlarmPositionsBegin+mealAlarmPositions*2-1)
-#define serialNumberBegin (mealAlarmPositionsEnd+1)
-#define serialNumberEnd (serialNumberBegin+serialNumber-1)
-#define ssidNameBegin (serialNumberEnd+1)
-#define ssidNameEnd (ssidNameBegin+ssidName-1)
-#define ssidPasswordBegin (ssidNameEnd+1)
-#define ssidPasswordEnd (ssidPasswordBegin+ssidPassword-1)
-#define userEmailBegin (ssidPasswordEnd+1)
-#define userEmailEnd (userEmailBegin+userEmail-1)
-#define dataMemoryBegin (userEmailEnd+1)
-#define dataMemoryEnd (dataMemoryBegin+dataMemorySize-1) //4194304
-#define memorySize dataMemoryEnd
+//#define drinkAlarmPositionsBegin 0
+//#define drinkAlarmPositionsEnd (drinkAlarmPositionsBegin+drinkAlarmPositions*2-1)
+//#define mealAlarmPositionsBegin (drinkAlarmPositionsEnd+1)
+//#define mealAlarmPositionsEnd (mealAlarmPositionsBegin+mealAlarmPositions*2-1)
+//#define serialNumberBegin (mealAlarmPositionsEnd+1)
+//#define serialNumberEnd (serialNumberBegin+serialNumber-1)
+//#define ssidNameBegin (serialNumberEnd+1)
+//#define ssidNameEnd (ssidNameBegin+ssidName-1)
+//#define ssidPasswordBegin (ssidNameEnd+1)
+//#define ssidPasswordEnd (ssidPasswordBegin+ssidPassword-1)
+//#define userEmailBegin (ssidPasswordEnd+1)
+//#define userEmailEnd (userEmailBegin+userEmail-1)
+//#define dataMemoryBegin (userEmailEnd+1)
+//#define dataMemoryEnd (dataMemoryBegin+dataMemorySize-1) //4194304
+//#define memorySize dataMemoryEnd
 //#define drinkSize 12 //bytes
+// -- deletar
 
 // Ultima posicao enviada sempre tera o numero 128+64+32 na posicao do dia
 // Posicao a ser enviada sempre tera dia menor que 32
@@ -39,48 +76,53 @@
 class Memory{
   public:
     Memory(Drink &drink, byte drinkSize);
+    void memTest();
+    
     void saveDrinkAtMemory(); // fazer lembrando de apagar memoria caso esteja cheia
     void lastDrinkWasSentToServerWithSucess(); //fazer
     byte getNextDrinkToSendToServer(); //fazer
     //lembrar de usar o ano ou o tipo de dado para alternar confirmacao de posicao --> trabalhoso --> por ultimo
     
-    void clearMemory();
-    void clearDataMemory();
-    void clearDrinkMemoryAtPosition(byte position);
+    void clearMemory();//no
+    void clearDataMemory(); //no
+    void clearDrinkMemoryAtPosition(byte position); //no
 
-    void preenchendoDrinksParaTeste();
-    void print();
-    void printData();
-    void printDrinkFromPosition(byte position);
-    void getDrinkFromPosition(byte position);
-    void setDrinkAtPosition(byte position);
+    void preenchendoDrinksParaTeste(); //no
+    void print(); //no
+    void printData(); //no
+    void printDrinkFromPosition(byte position); //no
+    void getDrinkFromPosition(byte position); //no
+    void setDrinkAtPosition(byte position); //no
 
-    byte getLastUsedPositionFromBeginScan();
-    byte getLastUsedPositionFromEndScan();
+    byte getLastUsedPositionFromBeginScan(); //no
+    byte getLastUsedPositionFromEndScan(); //no
 
-    byte getNextPositionToWriteDrink();
-    byte getNextPositionToCleanDrink();
-    byte getNextPositionToReadDrink();
+    byte getNextPositionToWriteDrink(); //no
+    byte getNextPositionToCleanDrink(); //no
+    byte getNextPositionToReadDrink(); //no
 
-    void getUserEmail(char email[]);
-    void setUserEmail(const char email[]);
-    byte getUserEmailSize();  
+//    void getUserEmail(char email[]); //no
+    void getUserEmail(char *email);
+//    void setUserEmail(const char email[]); //no
+    void setUserEmail(const char *email);
+    void emailTest();
+//    byte getUserEmailSize();  //no
 
-    void getSsidName(char* name);
-    void setSsidName(char* name);
+    void getSsidName(char* name); //no
+    void setSsidName(char* name); //no
 
-    void getSsidPassword(char* password);
-    void setSsidPassword(char* password);
+    void getSsidPassword(char* password); //no
+    void setSsidPassword(char* password); //no
 
-    byte getDrinkAlarmPositionQuantity(); //0=sem posicao - 1<=posicao<=25
-    bool addDrinkAlarm(byte hour, byte minute);
-    byte findDrinkAlarmPositionFrom(byte hour, byte minute);
-    bool clearDrinkAlam(byte hour, byte minute);
-    byte getDrinkAlarmHourFromPosition(byte position);
-    byte getDrinkAlarmMinuteFromPosition(byte position);
-    byte getDrinkAlarmNextAlarmPosition(byte hour, byte minute); //0=sem posicao - 1<=posicao<=25
-    void clearDrinkAlarmAllPosition();
-    void DrinkAlarmTest();
+    byte getDrinkAlarmPositionQuantity(); //0=sem posicao - 1<=posicao<=25 //no
+    bool addDrinkAlarm(byte hour, byte minute); //no
+    byte findDrinkAlarmPositionFrom(byte hour, byte minute); //no
+    bool clearDrinkAlam(byte hour, byte minute); //no
+    byte getDrinkAlarmHourFromPosition(byte position); //no
+    byte getDrinkAlarmMinuteFromPosition(byte position); //no
+    byte getDrinkAlarmNextAlarmPosition(byte hour, byte minute); //0=sem posicao - 1<=posicao<=25 //no
+    void clearDrinkAlarmAllPosition(); //no
+//    void DrinkAlarmTest(); //no
     
     
     
@@ -89,8 +131,9 @@ class Memory{
     Drink *_drink;
     int _size;
     byte _drinkSize;
-    uint8_t readByte(uint16_t address);
-    void writeByte(uint16_t address, uint8_t value);
+//    uint8_t readByte(uint16_t address);
+//    void writeByte(uint16_t address, uint8_t value);
+    At24c32 mem;
 //    JsonObject& _jsonDrink;
 
   

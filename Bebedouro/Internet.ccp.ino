@@ -90,7 +90,7 @@ void Internet::sendDrink(){
   
   char emailTeste[] = "jcmojj@gmail.com";
   _memory->setUserEmail(emailTeste);
-  char emailBuffer[_memory->getUserEmailSize()+1];
+  char emailBuffer[userEmailSpace+1];
   _memory->getUserEmail(emailBuffer);
   root["position"] = _drink->getPositionToSendToServer();
   root["email"] = String(emailBuffer);
@@ -166,5 +166,44 @@ void Internet::confirmDrinkWasSuccessfullySent(){
 
 //  tento enviar outro ---> acho que ele faz isso sozinho
   
+}
+
+void Internet::jsonTest(){
+  StaticJsonBuffer<400> jsonBuffer; //400
+  JsonObject& root = jsonBuffer.createObject();
+  root["email"] = "jcmojj@gmail.com";
+  String output;
+  root.printTo(output);
+  Serial.print("Tentando enviar: "); Serial.println(output);
+  
+  Serial.println("parseJson");
+  StaticJsonBuffer<400> jsonBufferRoot2; //400
+  JsonObject& root2 = jsonBufferRoot2.parseObject(output);
+  if (!root.success()) {
+    Serial.println("parseObject() failed");
+    return;
+   }
+
+   Serial.print("\nTestando Json - Write");
+   String teste = root["email"];
+   Serial.print("Write: "); Serial.println(teste);
+   int tamanho = sizeof(teste);
+   Serial.print("Tamanho: "); Serial.println(tamanho);
+   int posmax =0;
+   while((teste[posmax] != '\0')){//&&(posmax<tamanho)){
+    posmax++;
+   }
+   Serial.print("Posmax: "); Serial.println(posmax);
+
+   Serial.print("\nTestando Json - Read");
+   String teste2 = root2["email"];
+   Serial.print("Read: "); Serial.println(teste2); 
+   int tamanho2 =  sizeof(teste2);
+   Serial.print("Tamanho: "); Serial.println(tamanho2);
+   int posmax2 =0;
+   while((teste2[posmax2] != '\0')&&(posmax2<tamanho2)){
+    posmax2++;
+   }
+   Serial.print("Posmax: "); Serial.println(posmax2);   
 }
 
