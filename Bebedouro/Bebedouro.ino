@@ -135,12 +135,7 @@ void setup() {
 // Testes Setup
 //memory.memTest();
 //internet.jsonTest();
-memory.memTest();
-memory.print();
-memory.emailTest();
-memory.print();
-memory.cleanMemory();
-memory.print();
+memory.memoryTest();
 
 
 }

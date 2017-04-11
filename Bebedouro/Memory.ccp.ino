@@ -12,7 +12,16 @@ Memory::Memory(Drink &drink, byte drinkSize) {
   _drink = &drink;
   _drinkSize = drinkSize;
 }
-
+void Memory::memoryTest() {
+  //  memTest();// lomgo
+  //  print();
+  //  emailTest();
+  //  print();
+  cleanMemory();
+  print();
+  getDrinkAlarmPositionQuantity();
+  print();
+}
 void Memory::memTest() {
   Serial.println("\n REALIZANDO TESTE DO EEPROM DO RTC3231");
   // read and write byte
@@ -739,22 +748,6 @@ void  Memory::emailTest() {
   Serial.print("emailBuffer: "); Serial.println(emailBuffer);
 }// FIM ---------------------------------------------------------------->>> emailTest
 
-void Memory::memoryTest() {
-  memTest();
-  print();
-  emailTest();
-  print();
-  cleanMemory();
-  print();
-}
-
-//Memory::Memory(Drink &drink, byte drinkSize, JsonObject& jsonDrink){
-////  Serial.begin(9600);
-//  _drink = &drink;
-//  _drinkSize = drinkSize;
-//  _jsonDrink = jsonDrink;
-//}
-
 void Memory::saveDrinkAtMemory() {
   byte nextPositionToSave = getNextPositionToWriteDrink();
   byte nextPositionToDelete = getNextPositionToCleanDrink();
@@ -1146,8 +1139,6 @@ void Memory::printCleaningAlarm() {
     }
   }
 }
-
-
 void Memory::printData() {
   yield();
   EEPROM.begin(memorySize);
@@ -1205,25 +1196,45 @@ void Memory::cleanMemory() {
   cleanInfoMemory();
   cleanDataMemory();
 }
-
 void Memory::cleanInfoMemory() {
   Serial.print("Clean Info Memory");
+  byte cleanArray[30];
+  byte size = sizeof(cleanArray);
+  memset(&cleanArray[0], 0, size);
+//  Serial.print("cleanArray: ");
+//  for (int i = 0; i < sizeof(cleanArray); i++) {
+//    Serial.print(cleanArray[i]); Serial.print("-");
+//  }
+
+  byte cleanArray2[30];
+  byte size2 = sizeof(cleanArray2);
+  memset(&cleanArray2[0], 255, size2);
+//  Serial.print("cleanArray2: ");
+//  for (int i = 0; i < sizeof(cleanArray2); i++) {
+//    Serial.print(cleanArray2[i]); Serial.print("-");
+//  }
+
   for (int address = infoByteBegin; address <= infoByteEnd; ) {
     yield();
-    byte cleanArray[30];
-    byte size = sizeof(cleanArray);
-    memset(&cleanArray[0], 0, size);
-    if ( address < (infoByteEnd - size) ) {
+
+
+    if ( address < (userEmailEnd - size) ) {
       mem.write(address, (byte*)cleanArray, size);
       address = address + size;
+    } else if (address < userEmailEnd) {
+      mem.write(address, 0);
+      address++;
+    } else if ( address < (infoByteEnd - size2) ) {
+      mem.write(address, (byte*)cleanArray2, size2);
+      address = address + size;
     } else {
-      mem.write(address, '\0');
+      mem.write(address, 255);
       address++;
     }
+    Serial.print("Address: "); Serial.println(address);
   }
   Serial.println("\nInfo has been clean!");
 }
-
 void Memory::cleanDataMemory() {
   yield();
   for (int address = dataMemoryBegin; address <= dataMemoryEnd; ) {
@@ -1243,7 +1254,6 @@ void Memory::cleanDataMemory() {
   mem.write(dataMemoryBegin + 2, firstByte);
   Serial.println("\nDrink data has been clean!");
 }
-
 void Memory::cleanDrinkMemoryAtPosition(byte position) {
   yield();
   EEPROM.begin(memorySize);
@@ -1334,29 +1344,20 @@ void Memory::setUserEmail(const char email[]) {
 /* --------------------------------- Alarm --------------------------------- */
 
 
-//byte Memory::getDrinkAlarmPositionQuantity() {
-//  //  EEPROM.begin(memorySize);
-//  uint16_t quantidade = 0;
-//  Serial.print(" getQty:");
-//  //    Serial.print("(ERadd3n: ");     Serial.print(EEPROM.read(drinkAlarmPositionsBegin + (0) * 2));Serial.print(")");
-//  //    Serial.print("(ER: ");          Serial.print(EEPROM.read(drinkAlarmPositionsBegin + (0) * 2));Serial.print(")");
-//  //    Serial.print("(ERadd3n: ");     Serial.print(EEPROM.read(drinkAlarmPositionsBegin + (0) * 2));Serial.print(")");
-//  //    Serial.print("(ERn: ");         Serial.print(EEPROM.read(drinkAlarmPositionsBegin + (0) * 2));Serial.println(")");
-//
-//  //Serial.print("(ERt: ");         Serial.print(EEPROM.read(drinkAlarmPositionsBegin));Serial.println(")");
-//  //    Serial.print("\naddress: "); Serial.println(drinkAlarmPositionsBegin + (quantidade) * 2);
-//  //    Serial.print("(ER0: ");         Serial.print(EEPROM.read(0));Serial.println(")");
-//  //    Serial.print("(ERt: ");         Serial.print(EEPROM.read(drinkAlarmPositionsBegin));Serial.println(")");
-//  //    Serial.print("(ERn: ");         Serial.print(EEPROM.read(drinkAlarmPositionsBegin + (0) * 2));Serial.println(")");
-//  while (readByte(drinkAlarmPositionsBegin + (quantidade) * 2) != 255) {
-//    Serial.print("\n - (drinkAlarmPositionsBegin + (quantidade) * 2): "); Serial.print((drinkAlarmPositionsBegin + (quantidade) * 2));
-//    Serial.print(" - 1Eepromread: "); Serial.print(readByte(drinkAlarmPositionsBegin + (quantidade) * 2));
-//    Serial.print("- quant: "); Serial.print(quantidade);
-//    quantidade++;
-//  }
-//  EEPROM.end();
-//  return 0;
-//
+byte Memory::getDrinkAlarmPositionQuantity() {
+  //  EEPROM.begin(memorySize);
+  uint16_t quantidade = 0;
+  Serial.print(" getQty:");
+  while ((mem.read(drinkAlarmPositionsBegin + (quantidade) * 2) != 255) && (quantidade < drinkAlarmPositions)) {
+    //    Serial.print("\n - (drinkAlarmPositionsBegin + (quantidade) * 2): "); Serial.print((drinkAlarmPositionsBegin + (quantidade) * 2));
+    //    Serial.print(" - 1Eepromread: "); Serial.print(readByte(drinkAlarmPositionsBegin + (quantidade) * 2));
+    Serial.print(" - quant:"); Serial.print(quantidade);
+    quantidade++;
+  }
+  //  EEPROM.end();
+  return 0;
+
+}
 byte Memory::findDrinkAlarmPositionFrom(byte hour, byte minute) {
   EEPROM.begin(memorySize);
   if (getDrinkAlarmPositionQuantity() == 0) {
