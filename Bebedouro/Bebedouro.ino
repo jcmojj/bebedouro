@@ -46,9 +46,9 @@ void setup() {
     ;
   }
 
-//  drink.setValue(20, 2, 17, 11, 50, 30, 57, 'c', 111);
-//  memory.saveDrinkAtMemory();
-//  memory.printData();
+  drink.setValue(20, 2, 17, 11, 50, 30, 57, 'c', 111,100,120);
+  memory.saveDrinkAtMemory();
+  memory.printData();
   /* ----------------------- SETUP - WiFiManager ----------------------- */
   pinMode(BUILTIN_LED, OUTPUT);
   ticker.attach(0.6, tick);

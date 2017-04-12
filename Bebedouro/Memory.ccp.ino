@@ -9,8 +9,11 @@
 //}
 Memory::Memory(Drink &drink, byte drinkSize) {
   Serial.begin(115200);
+  rtc.Begin();
+//  rtcBegin();
   _drink = &drink;
   _drinkSize = drinkSize;
+  
 }
 void Memory::memoryTest() {
   //  memTest();// longo
@@ -753,12 +756,14 @@ void  Memory::emailTest() {
 }// FIM ---------------------------------------------------------------->>> emailTest
 
 void Memory::saveDrinkAtMemory() {
+  yield();
   byte nextPositionToSave = getNextPositionToWriteDrink();
   byte nextPositionToDelete = getNextPositionToCleanDrink();
   if ( (nextPositionToSave == nextPositionToDelete - 1) || ((nextPositionToSave == 255) && (nextPositionToDelete == 1)) ) {
     cleanDrinkMemoryAtPosition(nextPositionToDelete);
   }
   setDrinkAtPosition(nextPositionToSave);
+  yield();
 }
 void Memory::lastDrinkWasSentToServerWithSucess() {
   byte nextPositionToCleanDrink = getNextPositionToCleanDrink();
@@ -1092,7 +1097,6 @@ void Memory::printCleaningAlarm() {
 }
 void Memory::printData() {
   yield();
-  EEPROM.begin(memorySize);
   uint8_t value = 0;
   Serial.print("\n");
   Serial.println("Data Memory");
@@ -1137,9 +1141,7 @@ void Memory::printData() {
     } else {
       Serial.print("-");
     }
-
   }
-  EEPROM.end();
 }
 
 void Memory::cleanMemory() {
@@ -1398,18 +1400,145 @@ void Memory::setUserEmail(const char email[]) {
 //  EEPROM.end();
 //}
 
-//uint8_t Memory::readByte(uint16_t address) {
-//  uint8_t value;
-//  EEPROM.begin(memorySize);
-//  value = EEPROM.read(address); Serial.print("(readValue:"); Serial.print(value); Serial.print(")");
-//  //  EEPROM.commit();
-//  EEPROM.end();
-//  return value;
-//}
-//void Memory::writeByte(uint16_t address, uint8_t value) {
-//  EEPROM.begin(memorySize);
-//  EEPROM.write(address, value);
-//  //  EEPROM.commit();
-//  EEPROM.end();
-//}
+void Memory::rtcBegin(){
+  yield();
+  /* ------------------------------------------- RTC ------------------------------------------- */
+  Serial.print("RTC compiled: ");
+  Serial.print(__DATE__);
+  Serial.print(" ");
+  Serial.println(__TIME__);
+  //--------RTC SETUP ------------
 
+  RtcDateTime compiled = RtcDateTime(__DATE__, __TIME__);
+  //    printTime(const compiled);
+  Serial.println();
+
+  if (!rtc.IsDateTimeValid())
+  {
+    // Common Cuases:
+    //    1) first time you ran and the device wasn't running yet
+    //    2) the battery on the device is low or even missing
+
+    Serial.println("RTC lost confidence in the DateTime!");
+
+    // following line sets the RTC to the date & time this sketch was compiled
+    // it will also reset the valid flag internally unless the Rtc device is
+    // having an issue
+
+    rtc.SetDateTime(compiled);
+  }
+
+  if (!rtc.GetIsRunning())
+  {
+    Serial.println("RTC was not actively running, starting now");
+    rtc.SetIsRunning(true);
+  }
+  yield();
+  RtcDateTime now = rtc.GetDateTime();
+  if (now < compiled)
+  {
+    Serial.println("RTC is older than compile time!  (Updating DateTime)");
+    rtc.SetDateTime(compiled);
+  }
+  else if (now > compiled)
+  {
+    Serial.println("RTC is newer than compile time. (this is expected)");
+  }
+  else if (now == compiled)
+  {
+    Serial.println("RTC is the same as compile time! (not expected but all is fine)");
+  }
+
+  // never assume the Rtc was last configured by you, so
+  // just clear them to your needed state
+  rtc.Enable32kHzPin(false);
+  //    rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone);
+  rtc.SetSquareWavePin(DS3231SquareWavePin_ModeAlarmBoth);
+//  printTemperature();
+//  getClockTime();
+//  atualizarAlarmes();
+}
+//void rtcLoop(){
+////  getClockTime();
+//}
+//void Memory::atualizarAlarmes(){
+
+//   // Alarm 1 set to trigger every day when 
+//  // the hours, minutes, and seconds match
+//  RtcDateTime alarmTime = now + 88; // into the future
+//  
+//  DS3231AlarmOne alarm1( // momento de lavar pote
+//    alarmTime.Day(),
+//    alarmTime.Hour(),
+//    alarmTime.Minute(),
+//    alarmTime.Second(),
+//    DS3231AlarmOneControl_HoursMinutesSecondsMatch);
+//  rtc.SetAlarmOne(alarm1);
+//
+//  // Alarm 2 set to trigger at the top of the minute
+//  DS3231AlarmTwo alarm2(  // momento de encher agua ou colocar comida
+//    0,
+//    0,
+//    0,
+//    DS3231AlarmTwoControl_OncePerMinute);
+//  rtc.SetAlarmTwo(alarm2);
+//
+//  // throw away any old alarm state before we ran
+//  rtc.LatchAlarmsTriggeredFlags();
+  
+//}
+//void Memory::getClockTime() {
+//  now = rtc.GetDateTime();
+//  //  printTime(const now);
+//}
+//void Memory::setClockTime(uint16_t year, uint8_t month, uint8_t dayOfMonth, uint8_t hour, uint8_t minute, uint8_t second) {
+//  rtc.SetIsRunning(false);
+//  rtc.SetDateTime(RtcDateTime(year, month, dayOfMonth, hour, minute, second));
+//  rtc.SetIsRunning(true);
+//  if (isDateTimeValid()) {
+//    Serial.println("Hora Atualizada com Sucesso");
+//  }
+//  printNowDateTime();
+//}
+//void Memory::printDateTime(const RtcDateTime& dt) {
+//  char datestring[20];
+//  snprintf_P(datestring,
+//             countof(datestring),
+//             PSTR("%02u/%02u/%04u %02u:%02u:%02u"),
+//             dt.Month(),
+//             dt.Day(),
+//             dt.Year(),
+//             dt.Hour(),
+//             dt.Minute(),
+//             dt.Second() );
+//  Serial.print(datestring);
+//}
+//void Memory::printNowDateTime() {
+//  RtcDateTime dt = rtc.GetDateTime();
+//  char datestring[20];
+//  snprintf_P(datestring,
+//             countof(datestring),
+//             PSTR("%02u/%02u/%04u %02u:%02u:%02u"),
+//             dt.Month(),
+//             dt.Day(),
+//             dt.Year(),
+//             dt.Hour(),
+//             dt.Minute(),
+//             dt.Second() );
+//  Serial.print(datestring);
+//}
+//float Memory::getTemperature() {
+//  RtcTemperature temp = rtc.GetTemperature();
+//  Serial.print("Temperature: ");
+//  Serial.print(temp.AsFloat());
+//  Serial.println("C");
+//  return temp.AsFloat();
+//}
+//void Memory::printTemperature() {
+//  Serial.print( (rtc.GetTemperature()).AsFloat());
+//  Serial.println("C");
+//}
+//bool Memory::isDateTimeValid() {
+//  Serial.println("RTC lost confidence in the DateTime!");
+//  return rtc.IsDateTimeValid();
+//}

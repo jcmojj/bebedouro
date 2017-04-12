@@ -136,7 +136,6 @@ void Drink::setSinal(int sinal){
 }
 
 int Drink::getSize(){
-  //return _size;
   return 12;
 }
 

@@ -42,9 +42,9 @@
 // DS3231 GND --> GND
 #include <RtcDS3231.h>
 #include <Wire.h> // must be included here so that Arduino library object file references work
-RtcDS3231<TwoWire> Rtc(Wire);
-RtcDateTime now;
-#define countof(a) (sizeof(a) / sizeof(a[0]))
+//RtcDS3231<TwoWire> Rtc(Wire);
+//RtcDateTime now;
+//#define countof(a) (sizeof(a) / sizeof(a[0]))
 
 //#include <SoftwareWire.h>  // must be included here so that Arduino library object file references work
 //SoftwareWire myWire(SDA, SCL);
@@ -56,14 +56,14 @@ class Service{
   public:
     Service(Memory &memory,Drink &drink);
     void loop();
-    void getClockTime();
-    void setClockTime(uint16_t year, uint8_t month, uint8_t dayOfMonth, uint8_t hour, uint8_t minute, uint8_t second);
-    void printDateTime(const RtcDateTime& dt);
-    void printNowDateTime();    
-    bool isDateTimeValid();
-    float getTemperature();
-    void printTemperature();
-    void atualizarAlarmes();
+//    void getClockTime();
+//    void setClockTime(uint16_t year, uint8_t month, uint8_t dayOfMonth, uint8_t hour, uint8_t minute, uint8_t second);
+//    void printDateTime(const RtcDateTime& dt);
+//    void printNowDateTime();    
+//    bool isDateTimeValid();
+//    float getTemperature();
+//    void printTemperature();
+//    void atualizarAlarmes();
     
     
   private:

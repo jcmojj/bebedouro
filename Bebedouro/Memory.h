@@ -5,6 +5,14 @@
 #include "Drink.h"
 #include <Wire.h>
 #include <At24c32.h>
+#include <RtcDS3231.h>
+// DS3231 SDA --> SDA D4
+// DS3231 SCL --> SCL D5
+// DS3231 VCC --> 3.3v or 5v
+// DS3231 GND --> GND
+RtcDS3231<TwoWire> rtc(Wire);
+RtcDateTime now;
+#define countof(a) (sizeof(a) / sizeof(a[0]))
 
 #define drinkAlarmPositionsSize     2
 #define mealAlarmPositionsSize      2
@@ -37,36 +45,7 @@
 #define dataMemoryEnd (dataMemoryBegin+dataMemorySize-1) // 4083 byte --> pode ir ate 4095
 #define memorySize dataMemoryEnd
 
-//const uint8_t AT24C32_ADDRESS = 0x57;
 
-// -- deletar
-#include <EEPROM.h>
-//#define drinkAlarmPositions 25
-//#define mealAlarmPositions 25
-#define serialNumber 50
-//#define ssidName 50
-//#define ssidPassword 50
-#define userName 50
-#define userEmail 50
-//#define dataMemorySize (_drinkSize*255)
-
-//#define drinkAlarmPositionsBegin 0
-//#define drinkAlarmPositionsEnd (drinkAlarmPositionsBegin+drinkAlarmPositions*2-1)
-//#define mealAlarmPositionsBegin (drinkAlarmPositionsEnd+1)
-//#define mealAlarmPositionsEnd (mealAlarmPositionsBegin+mealAlarmPositions*2-1)
-//#define serialNumberBegin (mealAlarmPositionsEnd+1)
-//#define serialNumberEnd (serialNumberBegin+serialNumber-1)
-//#define ssidNameBegin (serialNumberEnd+1)
-//#define ssidNameEnd (ssidNameBegin+ssidName-1)
-//#define ssidPasswordBegin (ssidNameEnd+1)
-//#define ssidPasswordEnd (ssidPasswordBegin+ssidPassword-1)
-//#define userEmailBegin (ssidPasswordEnd+1)
-//#define userEmailEnd (userEmailBegin+userEmail-1)
-//#define dataMemoryBegin (userEmailEnd+1)
-//#define dataMemoryEnd (dataMemoryBegin+dataMemorySize-1) //4194304
-//#define memorySize dataMemoryEnd
-//#define drinkSize 12 //bytes
-// -- deletar
 
 // Ultima posicao enviada sempre tera o numero 128+64+32 na posicao do dia
 // Posicao a ser enviada sempre tera dia menor que 32
@@ -124,18 +103,29 @@ class Memory{
 //    byte getDrinkAlarmNextAlarmPosition(byte hour, byte minute); //0=sem posicao - 1<=posicao<=25 //no
 //    void cleanDrinkAlarmAllPosition(); //no
 //    void DrinkAlarmTest(); //no
+
     
-    
+//    void rtcLoop();
+//    void getClockTime();
+//    void setClockTime(uint16_t year, uint8_t month, uint8_t dayOfMonth, uint8_t hour, uint8_t minute, uint8_t second);
+//    void printDateTime(const RtcDateTime& dt);
+//    void printNowDateTime();    
+//    bool isDateTimeValid();
+//    float getTemperature();
+//    void printTemperature();
+//    void atualizarAlarmes();
     
   private:
     int getNextPositionAvailable();
     Drink *_drink;
     int _size;
     byte _drinkSize;
+    RtcDateTime now;
 //    uint8_t readByte(uint16_t address);
 //    void writeByte(uint16_t address, uint8_t value);
     At24c32 mem;
 //    JsonObject& _jsonDrink;
+    void rtcBegin();
 
   
 };
