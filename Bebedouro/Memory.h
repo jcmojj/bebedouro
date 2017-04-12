@@ -3,9 +3,11 @@
 
 #include "Arduino.h"
 #include "Drink.h"
+#include <pgmspace.h>
 #include <Wire.h>
 #include <At24c32.h>
 #include <RtcDS3231.h>
+#include <pgmspace.h>
 // DS3231 SDA --> SDA D4
 // DS3231 SCL --> SCL D5
 // DS3231 VCC --> 3.3v or 5v
@@ -106,13 +108,14 @@ class Memory{
 
     
 //    void rtcLoop();
-//    void getClockTime();
+    void getClockTime();
 //    void setClockTime(uint16_t year, uint8_t month, uint8_t dayOfMonth, uint8_t hour, uint8_t minute, uint8_t second);
 //    void printDateTime(const RtcDateTime& dt);
 //    void printNowDateTime();    
-//    bool isDateTimeValid();
-//    float getTemperature();
-//    void printTemperature();
+    bool isDateTimeValid();
+    float getTemperature();
+    void printTemperature();
+    void rtcBegin();
 //    void atualizarAlarmes();
     
   private:
@@ -125,7 +128,7 @@ class Memory{
 //    void writeByte(uint16_t address, uint8_t value);
     At24c32 mem;
 //    JsonObject& _jsonDrink;
-    void rtcBegin();
+
 
   
 };

@@ -7,7 +7,9 @@ Service::Service(Memory &memory, Drink &drink) {
 
 
 }
-
+void Service::begin(){
+  memory.rtcBegin();
+}
 void Service::loop() {
 //  getClockTime();
 }

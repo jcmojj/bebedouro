@@ -10,7 +10,6 @@
 Memory::Memory(Drink &drink, byte drinkSize) {
   Serial.begin(115200);
   rtc.Begin();
-//  rtcBegin();
   _drink = &drink;
   _drinkSize = drinkSize;
   
@@ -1400,9 +1399,8 @@ void Memory::setUserEmail(const char email[]) {
 //  EEPROM.end();
 //}
 
+/* ------------------------------------------- RTC ------------------------------------------- */
 void Memory::rtcBegin(){
-  yield();
-  /* ------------------------------------------- RTC ------------------------------------------- */
   Serial.print("RTC compiled: ");
   Serial.print(__DATE__);
   Serial.print(" ");
@@ -1454,8 +1452,8 @@ void Memory::rtcBegin(){
   rtc.Enable32kHzPin(false);
   //    rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone);
   rtc.SetSquareWavePin(DS3231SquareWavePin_ModeAlarmBoth);
-//  printTemperature();
-//  getClockTime();
+  printTemperature();
+  getClockTime();
 //  atualizarAlarmes();
 }
 //void rtcLoop(){
@@ -1487,10 +1485,10 @@ void Memory::rtcBegin(){
 //  rtc.LatchAlarmsTriggeredFlags();
   
 //}
-//void Memory::getClockTime() {
-//  now = rtc.GetDateTime();
-//  //  printTime(const now);
-//}
+void Memory::getClockTime() {
+  now = rtc.GetDateTime();
+  //  printTime(const now);
+}
 //void Memory::setClockTime(uint16_t year, uint8_t month, uint8_t dayOfMonth, uint8_t hour, uint8_t minute, uint8_t second) {
 //  rtc.SetIsRunning(false);
 //  rtc.SetDateTime(RtcDateTime(year, month, dayOfMonth, hour, minute, second));
@@ -1527,18 +1525,19 @@ void Memory::rtcBegin(){
 //             dt.Second() );
 //  Serial.print(datestring);
 //}
-//float Memory::getTemperature() {
-//  RtcTemperature temp = rtc.GetTemperature();
-//  Serial.print("Temperature: ");
-//  Serial.print(temp.AsFloat());
-//  Serial.println("C");
-//  return temp.AsFloat();
-//}
-//void Memory::printTemperature() {
-//  Serial.print( (rtc.GetTemperature()).AsFloat());
-//  Serial.println("C");
-//}
-//bool Memory::isDateTimeValid() {
-//  Serial.println("RTC lost confidence in the DateTime!");
-//  return rtc.IsDateTimeValid();
-//}
+float Memory::getTemperature() {
+  RtcTemperature temp = rtc.GetTemperature();
+  Serial.print("Temperature: ");
+  Serial.print(temp.AsFloat());
+  Serial.println("C");
+  return temp.AsFloat();
+}
+void Memory::printTemperature() {
+  Serial.print("Temperature: ");
+  Serial.print( (rtc.GetTemperature()).AsFloat());
+  Serial.println("C");
+}
+bool Memory::isDateTimeValid() {
+  Serial.println("RTC lost confidence in the DateTime!");
+  return rtc.IsDateTimeValid();
+}
