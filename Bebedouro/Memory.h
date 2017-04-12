@@ -114,6 +114,8 @@ class Memory{
 //    void printNowDateTime();    
     bool isDateTimeValid();
     float getTemperature();
+    byte getTemperatureFromFloatToByte(float temp);
+    float getTemperatureFromByteToFloat(byte temp);
     void printTemperature();
     void rtcBegin();
 //    void atualizarAlarmes();

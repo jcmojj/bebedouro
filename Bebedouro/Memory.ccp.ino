@@ -1532,6 +1532,37 @@ float Memory::getTemperature() {
   Serial.println("C");
   return temp.AsFloat();
 }
+byte Memory::getTemperatureFromFloatToByte(float tempFloat) {
+//  float tempFloat = rtc.GetTemperature().AsFloat();
+  float decimal = tempFloat - (int)tempFloat;
+  byte temp;
+  if(tempFloat >= 0){
+    temp = (byte)tempFloat+64*1; //se for positivo
+  }else{
+    temp = (byte)tempFloat+64*0; //se for negativo
+  }
+  if((decimal>0.25)&&(decimal<0.75)){
+    temp = temp + 128*1; // se for 0.5
+  }else{
+    temp = temp + 128*0;  // se for 0.0
+  }
+  return temp;
+}
+float Memory::getTemperatureFromByteToFloat(byte temp) {
+//  float tempFloat = rtc.GetTemperature().AsFloat();
+  float floatTemp = 0;
+  bool isPositive = 0;
+  bool isHalfDecimal = 0;
+  if( temp>127){
+    isHalfDecimal = 1;
+    temp = temp - 128;
+  }
+  if( temp>63){
+    isPositive = 1;
+    temp = temp - 64;
+  }
+  return ((float)temp + 0.5*((float)isHalfDecimal)) *(2*((float)isPositive)-1);
+}
 void Memory::printTemperature() {
   Serial.print("Temperature: ");
   Serial.print( (rtc.GetTemperature()).AsFloat());
