@@ -101,7 +101,7 @@ void setup() {
 //     webSocket.begin("ws://localhost:8080/EchoChamber/echo", 80);
 //     webSocket.begin("echo.websocket.org", 80, "/echo","arduino");
 //     webSocket.begin("echo.websocket.org", 80, "/echo","arduino");
-//       webSocket.begin("websocket-echo.herokuapp.com", 80, "/","arduino"); //melhor<-----
+       webSocket.begin("websocket-echo.herokuapp.com", 80, "/","arduino"); //melhor<-----
 //webSocket.beginSocketIO("socketio-echo.herokuapp.com", 81, "/","arduino");
 //webSocket.beginSocketIO("socketio-echo.herokuapp.com", 80, "/socket.io/?EIO=3");
 //webSocket.beginSocketIO("socketio-echo.herokuapp.com", 80, "/socket.io/?EIO=3&transport=websocket"); // melhor 2
@@ -120,9 +120,9 @@ void setup() {
 //     webSocket.beginSSL("http://echo.herokuapp.com/", 80, "/","arduino");
  //webSocket.setAuthorization("user", "Password"); // HTTP Basic Authorization
 
-//     webSocket.onEvent(webSocketEvent);<------
+     webSocket.onEvent(webSocketEvent);
 
-//     Serial.print("Fim WebSocket");<------
+     Serial.print("Fim WebSocket");
 //   char emailTeste[] = "jcmojj@gmail.com";
 //  memory.setUserEmail(emailTeste);
 
@@ -135,7 +135,7 @@ void setup() {
 // Testes Setup
 //memory.memTest();
 //internet.jsonTest();
-memory.memoryTest();
+//memory.memoryTest();//apaga e testa
 
 
 }

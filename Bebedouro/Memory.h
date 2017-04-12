@@ -80,15 +80,14 @@ class Memory{
     void memoryTest();
     
     
-    void saveDrinkAtMemory(); // fazer lembrando de apagar memoria caso esteja cheia
-    void lastDrinkWasSentToServerWithSucess(); //fazer
-    byte getNextDrinkToSendToServer(); //fazer
+    void saveDrinkAtMemory();//no-yes // fazer lembrando de apagar memoria caso esteja cheia
+    void lastDrinkWasSentToServerWithSucess(); //no-yes//fazer
+    byte getNextDrinkToSendToServer(); //no-yes//fazer
    
     void cleanMemory();
     void cleanInfoMemory();
     void cleanDataMemory(); 
-    void cleanDrinkMemoryAtPosition(byte position); //no
-
+    void cleanDrinkMemoryAtPosition(byte position); //no-yes
     
     void print(); 
     void printInfo(); 
@@ -99,16 +98,16 @@ class Memory{
     void printCleaningAlarm();
      
     void preenchendoDrinksParaTeste(); //no
-    void printDrinkFromPosition(byte position); //no
-    void getDrinkFromPosition(byte position); //no
-    void setDrinkAtPosition(byte position); //no
+    void printDrinkFromPosition(byte position); //no-yes
+    void getDrinkFromPosition(byte position); //no-yes
+    void setDrinkAtPosition(byte position); //no-yes
 
-    byte getLastUsedPositionFromBeginScan(); //no
-    byte getLastUsedPositionFromEndScan(); //no
+    byte getLastUsedPositionFromBeginScan(); //no-yes
+    byte getLastUsedPositionFromEndScan(); //no-yes
 
-    byte getNextPositionToWriteDrink(); //no
-    byte getNextPositionToCleanDrink(); //no
-    byte getNextPositionToReadDrink(); //no
+    byte getNextPositionToWriteDrink(); //no-yes
+    byte getNextPositionToCleanDrink(); //no-yes
+    byte getNextPositionToReadDrink(); //no-yes
 
     void getUserEmail(char *  );
     void setUserEmail(const char *email);
@@ -116,14 +115,14 @@ class Memory{
 
 
 
-    byte getDrinkAlarmPositionQuantity(); //0=sem posicao - 1<=posicao<=25 //no
-    bool addDrinkAlarm(byte hour, byte minute); //no
-    byte findDrinkAlarmPositionFrom(byte hour, byte minute); //no
-    bool cleanDrinkAlam(byte hour, byte minute); //no
-    byte getDrinkAlarmHourFromPosition(byte position); //no
-    byte getDrinkAlarmMinuteFromPosition(byte position); //no
-    byte getDrinkAlarmNextAlarmPosition(byte hour, byte minute); //0=sem posicao - 1<=posicao<=25 //no
-    void cleanDrinkAlarmAllPosition(); //no
+//    byte getDrinkAlarmPositionQuantity(); //0=sem posicao - 1<=posicao<=25 //no
+//    bool addDrinkAlarm(byte hour, byte minute); //no
+//    byte findDrinkAlarmPositionFrom(byte hour, byte minute); //no
+//    bool cleanDrinkAlam(byte hour, byte minute); //no
+//    byte getDrinkAlarmHourFromPosition(byte position); //no
+//    byte getDrinkAlarmMinuteFromPosition(byte position); //no
+//    byte getDrinkAlarmNextAlarmPosition(byte hour, byte minute); //0=sem posicao - 1<=posicao<=25 //no
+//    void cleanDrinkAlarmAllPosition(); //no
 //    void DrinkAlarmTest(); //no
     
     

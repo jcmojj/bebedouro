@@ -82,22 +82,20 @@ void Internet::parseJson(uint8_t * json){
 }
 void Internet::sendDrink(){
   yield();
- 
-  long hash = 1234567890;
   StaticJsonBuffer<400> jsonBuffer; //400
   JsonObject& root = jsonBuffer.createObject();
   root["type"] = "drink";
   
-  char emailTeste[] = "jcmojj@gmail.com";
-  _memory->setUserEmail(emailTeste);
   char emailBuffer[userEmailSpace+1];
+  emailBuffer[userEmailSpace] = '\0';
   _memory->getUserEmail(emailBuffer);
-  root["position"] = _drink->getPositionToSendToServer();
+  
   root["email"] = String(emailBuffer);
-  JsonObject& data = root.createNestedObject("data");
-     data["dia"] = _drink->getDia();
-     data["mes"] = _drink->getMes();
-     data["ano"] = _drink->getAno();;
+  root["position"] = _drink->getPositionToSendToServer();
+  JsonObject& date = root.createNestedObject("date");
+     date["dia"] = _drink->getDia();
+     date["mes"] = _drink->getMes();
+     date["ano"] = _drink->getAno();;
    JsonObject& horario = root.createNestedObject("horario");
      horario["hora"] = _drink->getHora();
      horario["minuto"] = _drink->getMinuto();
