@@ -100,17 +100,6 @@ class Memory {
     void snTest();
 
 
-//        byte getDrinkAlarmPositionQuantity(); //0=sem posicao - 1<=posicao<=25 //no
-//        bool addDrinkAlarm(byte hour, byte minute); //no
-//        byte findDrinkAlarmPositionFrom(byte hour, byte minute); //no
-//        bool cleanDrinkAlarm(byte hour, byte minute); //no
-//        byte getDrinkAlarmHourFromPosition(byte position); //no
-//        byte getDrinkAlarmMinuteFromPosition(byte position); //no
-//        byte getDrinkAlarmNextAlarmPosition(byte hour, byte minute); //0=sem posicao - 1<=posicao<=25 //no
-//        void cleanDrinkAlarmAllPosition(); //no
-//        void drinkAlarmTest(); //no
-//        byte getDrinkAlarmExactAlarmPosition(byte hour, byte minute);
-
     byte getAlarmHourFromPosition           (byte position, int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize);
     byte getAlarmMinuteFromPosition         (byte position, int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize);
     byte getAlarmPositionQuantity                          (int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize);
@@ -157,8 +146,6 @@ void cleaningAlarmTest                 ();
 
 
 
-    
-    //    void rtcLoop();
     void  updateClock();
     void  setClockDateTime(uint16_t year, uint8_t month, uint8_t dayOfMonth, uint8_t hour, uint8_t minute, uint8_t second);
     void  printDateTime(const RtcDateTime& dt);
@@ -176,20 +163,14 @@ void cleaningAlarmTest                 ();
     uint8_t  getMinute();
     uint8_t  getSecond();
 
-
-
-    //    void atualizarAlarmes();
-
   private:
     int getNextPositionAvailable();
     Drink *_drink;
     int _size;
     byte _drinkSize;
     RtcDateTime now;
-    //    uint8_t readByte(uint16_t address);
-    //    void writeByte(uint16_t address, uint8_t value);
     At24c32 mem;
-    //    JsonObject& _jsonDrink;
+
 
 
 
