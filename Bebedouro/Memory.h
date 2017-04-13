@@ -75,6 +75,7 @@ class Memory {
     void printData();
     void printEmail();
     void printSerialNumber();
+    void printAlarm(int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize);
     void printDrinkAlarm();
     void printMealAlarm();
     void printCleaningAlarm();
@@ -102,14 +103,26 @@ class Memory {
         byte getDrinkAlarmPositionQuantity(); //0=sem posicao - 1<=posicao<=25 //no
         bool addDrinkAlarm(byte hour, byte minute); //no
         byte findDrinkAlarmPositionFrom(byte hour, byte minute); //no
-    //    bool cleanDrinkAlam(byte hour, byte minute); //no
+        bool cleanDrinkAlarm(byte hour, byte minute); //no
         byte getDrinkAlarmHourFromPosition(byte position); //no
         byte getDrinkAlarmMinuteFromPosition(byte position); //no
         byte getDrinkAlarmNextAlarmPosition(byte hour, byte minute); //0=sem posicao - 1<=posicao<=25 //no
         void cleanDrinkAlarmAllPosition(); //no
-    //    void DrinkAlarmTest(); //no
+        void drinkAlarmTest(); //no
+        byte getDrinkAlarmExactAlarmPosition(byte hour, byte minute);
 
+    byte getAlarmHourFromPosition           (byte position, int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize);
+    byte getAlarmMinuteFromPosition         (byte position, int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize);
+    byte getAlarmPositionQuantity                          (int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize);
+    byte findAlarmPositionFrom     (byte hour, byte minute, int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize);
+    void cleanAlarmAllPosition                             (int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize);
+    byte getAlarmNextAlarmPosition (byte hour, byte minute, int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize);
+    byte getAlarmExactAlarmPosition(byte hour, byte minute, int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize);
+    bool cleanAlarm                (byte hour, byte minute, int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize);
+    bool addAlarm                  (byte hour, byte minute, int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize);
+    void AlarmTest                                         (int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize);
 
+    
     //    void rtcLoop();
     void  updateClock();
     void  setClockDateTime(uint16_t year, uint8_t month, uint8_t dayOfMonth, uint8_t hour, uint8_t minute, uint8_t second);

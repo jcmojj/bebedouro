@@ -23,23 +23,10 @@ void Memory::memoryTest() {
   //  printInfo();
   //  print();
   //  preenchendoDrinksParaTeste();
-  cleanDrinkAlarmAllPosition();
-  int sinal = 1;
-  int sinal2 = 1;
-  byte minuto = 30;
-  byte hora = 0;
-  for(byte i =0;i<64;i++){
-    if(i%2 == 0){ sinal=1;}else{sinal=-1;}
-    if(i%3==0){sinal2 =-1;}
-    if(i%5==0){sinal2 = 1;}
-    if(i%24 == 0){ minuto = 30;}
-    if(i%4 == 0 ){ hora++;}
-    hora = hora + sinal2;
-    minuto = minuto+i*sinal;
-    addDrinkAlarm(hora,minuto);
-    printDrinkAlarm();
-  }
-  
+ 
+  drinkAlarmTest();
+  Serial.print("NOVO TESTE NOVO TESTE NOVO TESTE V NOVO TESTE NOVO TESTE");
+  AlarmTest(drinkAlarmPositionsBegin, drinkAlarmPositions, drinkAlarmPositionsSize);
   
 //  mem.write(drinkAlarmPositionsBegin,8);
 //  mem.write(drinkAlarmPositionsBegin+1,30);
@@ -1128,6 +1115,47 @@ void Memory::printSerialNumber() {
     }
   }
 }
+void Memory::printAlarm(int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize) {
+  uint8_t value = 0;
+  Serial.print("\n");
+  Serial.println(" Alarm Memory");
+  Serial.print("(address="); if (AlarmPositionsBegin < 100) {
+    Serial.print(" ");
+  } if (AlarmPositionsBegin < 10) {
+    Serial.print(" ");
+  } Serial.print(AlarmPositionsBegin); Serial.print(")-");
+  byte AlarmPositionsEnd = (AlarmPositionsBegin+AlarmPositions*AlarmPositionsSize-1);
+  for (int address = AlarmPositionsBegin; address <= AlarmPositionsEnd; address++) {
+    yield();
+    value = mem.read(address);
+    if (value < 100) {
+      Serial.print(" ");
+    } if (value < 10) {
+      Serial.print(" ");
+    }
+    Serial.print(value, DEC);
+    if ((address + 1) % 16 == 0) {
+      Serial.print("-(address="); if (address < 100) {
+        Serial.print(" ");
+      } if (address < 10) {
+        Serial.print(" ");
+      } Serial.print(address); Serial.print(")");
+      Serial.println("");
+      if (address != AlarmPositionsEnd) {
+        Serial.print("(address=");
+        if ((address + 1) < 100) {
+          Serial.print(" ");
+        } if ((address + 1) < 10) {
+          Serial.print(" ");
+        } Serial.print(address + 1);
+        Serial.print(")-");
+      }
+      yield();
+    } else {
+      Serial.print("-");
+    }
+  }
+}
 void Memory::printDrinkAlarm() {
   uint8_t value = 0;
   Serial.print("\n");
@@ -1361,9 +1389,9 @@ void Memory::setSN(const char sn[]) {
 
 byte Memory::getDrinkAlarmPositionQuantity() { // a primeira posicao é 1 - 0 significa vazio
   byte size = drinkAlarmPositions * drinkAlarmPositionsSize + 1;
-  char drinkAlarms[size];
+  byte drinkAlarms[size];
   memset(&drinkAlarms[0], 0, size);
-  mem.readChars(drinkAlarmPositionsBegin, drinkAlarms, size);
+  mem.read(drinkAlarmPositionsBegin, drinkAlarms, size);
 //  Serial.println("drinkAlarms: ");
 //  for (int i = 0; i < sizeof(drinkAlarms); i++) {
 //    Serial.print("i= "); Serial.print(i);
@@ -1383,9 +1411,9 @@ byte Memory::getDrinkAlarmPositionQuantity() { // a primeira posicao é 1 - 0 si
 }
 byte Memory::findDrinkAlarmPositionFrom(byte hour, byte minute) {  // a primeira posicao é 1, 0 significa que nao encontrou (ou é vazio)
   byte size = drinkAlarmPositions * drinkAlarmPositionsSize + 1;
-  char drinkAlarms[size];
+  byte drinkAlarms[size];
   memset(&drinkAlarms[0], 0, size);
-  mem.readChars(drinkAlarmPositionsBegin, drinkAlarms, size);
+  mem.read(drinkAlarmPositionsBegin, drinkAlarms, size);
   byte i = 0;
   byte position = 0;
   while ( (i < size - 1) ) {
@@ -1402,6 +1430,9 @@ bool Memory::addDrinkAlarm(byte hour, byte minute) {// falta verificar se ja exi
   if( (hour>23) || (minute>59) ){
     return false;
   }
+  if( getDrinkAlarmExactAlarmPosition(hour, minute) != 0 ){
+    return false;
+  }
   byte DrinkAlarmPositionQuantity = getDrinkAlarmPositionQuantity();
   Serial.print(" -DrinkAlarmPositionQuantity:"); Serial.println(DrinkAlarmPositionQuantity);
   if (DrinkAlarmPositionQuantity == drinkAlarmPositions) {
@@ -1413,13 +1444,22 @@ bool Memory::addDrinkAlarm(byte hour, byte minute) {// falta verificar se ja exi
     return true;
   }
   byte size = drinkAlarmPositions * drinkAlarmPositionsSize;
-  char drinkAlarms[size];
+  byte drinkAlarms[size];
   memset(&drinkAlarms[0], 0, size);
-  mem.readChars(drinkAlarmPositionsBegin, drinkAlarms, size);
+  mem.read(drinkAlarmPositionsBegin, drinkAlarms, size);
   byte DrinkAlarmNextAlarmPosition = getDrinkAlarmNextAlarmPosition(hour,minute);
-  byte positionHour = size - 2;
-  byte positionMinute = size - 1;
+  Serial.print("\n - INSIDE: DrinkAlarmNextAlarmPosition: "); Serial.print(DrinkAlarmNextAlarmPosition);
+  byte positionHour = DrinkAlarmPositionQuantity*drinkAlarmPositionsSize;
+  byte positionMinute = DrinkAlarmPositionQuantity*drinkAlarmPositionsSize + 1;
   while( positionHour != (DrinkAlarmNextAlarmPosition-1)*2){
+//    Serial.print("\n - DrinkAlarmNextAlarmPosition: "); Serial.print(DrinkAlarmNextAlarmPosition);
+//    Serial.print(" - positionHour:"); Serial.print(positionHour);
+//    Serial.print(" - drinkAlarms[positionHour]: "); Serial.print(drinkAlarms[positionHour]);
+//    Serial.print(" - drinkAlarms[positionHour-2]: "); Serial.print(drinkAlarms[positionHour-2]);
+//    Serial.print(" - positionMinute:"); Serial.print(positionMinute);
+//    Serial.print(" - drinkAlarms[positionMinute]: "); Serial.print(drinkAlarms[positionMinute]);
+//    Serial.print(" - drinkAlarms[positionMinute-2]: "); Serial.print(drinkAlarms[positionMinute-2]);
+//    
     drinkAlarms[positionHour]   = drinkAlarms[positionHour-2];
     drinkAlarms[positionMinute] = drinkAlarms[positionMinute-2];
     positionHour--;
@@ -1429,18 +1469,53 @@ bool Memory::addDrinkAlarm(byte hour, byte minute) {// falta verificar se ja exi
   }
   drinkAlarms[positionHour] = hour;
   drinkAlarms[positionMinute] = minute;
-  mem.writeChars(drinkAlarmPositionsBegin, drinkAlarms, size);
+  mem.write(drinkAlarmPositionsBegin, drinkAlarms, size);
   return true; 
 }
-//bool Memory::cleanDrinkAlam(byte hour, byte minute) {
-//  EEPROM.begin(memorySize);
-//  if (findDrinkAlarmPositionFrom(hour, minute) != 0) {
-//    EEPROM.write(drinkAlarmPositionsBegin + findDrinkAlarmPositionFrom(hour, minute) * 2, 255);
-//    EEPROM.write(drinkAlarmPositionsBegin + 1 + findDrinkAlarmPositionFrom(hour, minute) * 2, 255);
-//  }
-//  return 0;
-//  EEPROM.end();
-//}
+bool Memory::cleanDrinkAlarm(byte hour, byte minute) {
+  Serial.print("\n Limpando");
+  Serial.print(" -hour: "); Serial.print(hour);
+  Serial.print(" -minute: "); Serial.print(minute);
+  byte DrinkAlarmExactAlarmPosition = getDrinkAlarmExactAlarmPosition(hour,minute);
+  if( getDrinkAlarmExactAlarmPosition(hour, minute) == 0 ){
+    return false;
+  }
+  if (DrinkAlarmExactAlarmPosition == drinkAlarmPositions) {
+    int hourminute = (((int)255)<<8) + (int)255;
+    mem.writeInt(drinkAlarmPositionsBegin+(drinkAlarmPositions-1)*drinkAlarmPositionsSize, hourminute);
+    return true;
+  }
+
+  byte size = drinkAlarmPositions * drinkAlarmPositionsSize;
+  byte drinkAlarms[size];
+  memset(&drinkAlarms[0], 0, size);
+  mem.read(drinkAlarmPositionsBegin, drinkAlarms, size);
+  byte DrinkAlarmPositionQuantity = getDrinkAlarmPositionQuantity();
+  Serial.print("\n - INSIDE2: DrinkAlarmExactAlarmPosition: "); Serial.print(DrinkAlarmExactAlarmPosition);
+  Serial.print(" - DrinkAlarmPositionQuantity: "); Serial.print(DrinkAlarmPositionQuantity);
+  byte positionHour = (DrinkAlarmExactAlarmPosition-1)*drinkAlarmPositionsSize;
+  byte positionMinute = (DrinkAlarmExactAlarmPosition-1)*drinkAlarmPositionsSize+1;
+  while( positionHour != (DrinkAlarmPositionQuantity-1)*drinkAlarmPositionsSize){
+//    Serial.print("\n - DrinkAlarmNextAlarmPosition: "); Serial.print(DrinkAlarmNextAlarmPosition);
+//    Serial.print(" - positionHour:"); Serial.print(positionHour);
+//    Serial.print(" - drinkAlarms[positionHour]: "); Serial.print(drinkAlarms[positionHour]);
+//    Serial.print(" - drinkAlarms[positionHour-2]: "); Serial.print(drinkAlarms[positionHour-2]);
+//    Serial.print(" - positionMinute:"); Serial.print(positionMinute);
+//    Serial.print(" - drinkAlarms[positionMinute]: "); Serial.print(drinkAlarms[positionMinute]);
+//    Serial.print(" - drinkAlarms[positionMinute-2]: "); Serial.print(drinkAlarms[positionMinute-2]);
+//    
+    drinkAlarms[positionHour]   = drinkAlarms[positionHour+2];
+    drinkAlarms[positionMinute] = drinkAlarms[positionMinute+2];
+    positionHour++;
+    positionHour++;
+    positionMinute++;
+    positionMinute++;
+  }
+  drinkAlarms[positionHour]   = 255;
+  drinkAlarms[positionMinute] = 255;
+  mem.write(drinkAlarmPositionsBegin, drinkAlarms, size);
+  return true; 
+}
 byte Memory::getDrinkAlarmHourFromPosition(byte position) {
   return mem.read(drinkAlarmPositionsBegin + (position - 1) * 2);
 }
@@ -1460,35 +1535,49 @@ byte Memory::getDrinkAlarmNextAlarmPosition(byte hour, byte minute) {
     return posicao;
   }
   byte size = drinkAlarmPositions * drinkAlarmPositionsSize;
+  byte drinkAlarms[size];
+  memset(&drinkAlarms[0], 0, size);
+  mem.read(drinkAlarmPositionsBegin, drinkAlarms, size);
+  float horaProcurada = (float)hour + ((float)minute) / 60.0;
+  float horaEeprom = (float)drinkAlarms[(posicao - 1) * 2] + ( (float)( drinkAlarms[1 + (posicao - 1) * 2] ) ) / 60.0;
+//  Serial.print(" getDrinkAlarmNextAlarmPosition ");
+//  Serial.print(" -horaProcurada: ");Serial.print(horaProcurada);
+//  Serial.print(" -horaEeprom: ");Serial.println(horaEeprom);
+  while ( (horaProcurada > horaEeprom) ) {
+    if( (posicao) == DrinkAlarmPositionQuantity ){
+      return 0;
+    }
+    posicao++;
+    horaEeprom = (float)drinkAlarms[(posicao - 1) * 2] + ( (float)( drinkAlarms[1 + (posicao - 1) * 2] ) ) / 60.0;
+//      Serial.print(" getDrinkAlarmNextAlarmPosition ");
+//  Serial.print(" -horaProcurada: ");Serial.print(horaProcurada);
+//  Serial.print(" -horaEeprom: ");Serial.println(horaEeprom);
+  }
+  Serial.print(" -posicao return:"); Serial.println(posicao);
+  return posicao; 
+}
+byte Memory::getDrinkAlarmExactAlarmPosition(byte hour, byte minute) {
+  byte DrinkAlarmPositionQuantity = getDrinkAlarmPositionQuantity();
+  if (DrinkAlarmPositionQuantity == 0) {
+    return 0;
+  }
+  byte size = drinkAlarmPositions * drinkAlarmPositionsSize;
   char drinkAlarms[size];
   memset(&drinkAlarms[0], 0, size);
   mem.readChars(drinkAlarmPositionsBegin, drinkAlarms, size);
-  byte i = 0;
+  byte posicao = 1;
   float horaProcurada = (float)hour + ((float)minute) / 60.0;
   float horaEeprom = (float)drinkAlarms[(posicao - 1) * 2] + ( (float)( drinkAlarms[1 + (posicao - 1) * 2] ) ) / 60.0;
-  Serial.println("\n\ngetDrinkAlarmNextAlarmPosition");
-  Serial.print(" -i:"); Serial.println(i); 
-  Serial.print(" -hour:"); Serial.println(hour);
-//  Serial.print(" -minute:"); Serial.println(minute);
-//  Serial.print(" -horaProcurada:"); Serial.println(horaProcurada);
-//  Serial.print(" -horaEeprom:"); Serial.println(horaEeprom,2);
-  while ( ((posicao-1) != DrinkAlarmPositionQuantity) && (horaProcurada > horaEeprom) ) {
+  while ( horaProcurada != horaEeprom ) {
+    if( (posicao-1) == (DrinkAlarmPositionQuantity + 1) ){
+      return 0;
+    }
     posicao++;
     horaEeprom = (float)drinkAlarms[(posicao - 1) * 2] + ( (float)( drinkAlarms[1 + (posicao - 1) * 2] ) ) / 60.0;
-//    Serial.println("\n\nWhile");
-//    Serial.print(" -horaProcurada:"); Serial.println(horaProcurada);
-//    Serial.print(" -horaEeprom:"); Serial.println(horaEeprom,2);
-//    Serial.print(" -posicao:"); Serial.println(posicao);
-//    Serial.print(" -DrinkAlarmPositionQuantity:"); Serial.println(DrinkAlarmPositionQuantity);
-//    Serial.print(" -drinkAlarms[(posicao - 1) * 2]:"); Serial.println(drinkAlarms[(posicao - 1) * 2]);
-//    Serial.print(" -(float)drinkAlarms[(posicao - 1) * 2]:"); Serial.println((float)drinkAlarms[(posicao - 1) * 2],2);
-//    Serial.print(" -( drinkAlarms[1 + (posicao - 1) * 2] ):"); Serial.println(( drinkAlarms[1 + (posicao - 1) * 2] ));
-//    Serial.print(" -(float)( drinkAlarms[1 + (posicao - 1) * 2] ):"); Serial.println((float)( drinkAlarms[1 + (posicao - 1) * 2] ),2);
-//    Serial.print(" -( (float)( drinkAlarms[1 + (posicao - 1) * 2] ) ) / 60.0:"); Serial.println(( (float)( drinkAlarms[1 + (posicao - 1) * 2] ) ) / 60.0,2);
-//    Serial.print(" -(float)drinkAlarms[(posicao - 1) * 2] + ( (float)( drinkAlarms[1 + (posicao - 1) * 2] ) ) / 60.0:"); Serial.println((float)drinkAlarms[(posicao - 1) * 2] + ( (float)( drinkAlarms[1 + (posicao - 1) * 2] ) ) / 60.0);
-//    yield();
   }
-  Serial.print(" -posicao return:"); Serial.println(posicao);
+  Serial.print("\n -posicao igual encontrada:"); Serial.print(posicao);
+  Serial.print(" -hora: "); Serial.print(hour);
+  Serial.print(" -minuto: "); Serial.println(minute);
   return posicao; 
 }
 void Memory::cleanDrinkAlarmAllPosition() {
@@ -1498,40 +1587,271 @@ void Memory::cleanDrinkAlarmAllPosition() {
   memset(&cleanArray[0], 255, size);
   mem.write(drinkAlarmPositionsBegin, (byte*)cleanArray, size);
 }
-//void Memory::DrinkAlarmTest() {
-//  EEPROM.begin(memorySize);
-//  Serial.println("Dentro drink");
-//  cleanDrinkAlarmAllPosition();
-//  memory.print();
-//  //  Serial.println("Dentro drink");
-//  //  Serial.print("Qty0: (");Serial.print(getDrinkAlarmPositionQuantity());Serial.println(")");
-//  //  EEPROM.write(drinkAlarmPositionsBegin,1);EEPROM.commit();Serial.print("drinkAlarmPositionsBegin:");Serial.println(EEPROM.read(drinkAlarmPositionsBegin));
-//  //  EEPROM.write(drinkAlarmPositionsBegin+1,1);EEPROM.commit();Serial.print("drinkAlarmPositionsBegin+1:");Serial.println(EEPROM.read(drinkAlarmPositionsBegin+1));
-//  //  Serial.print("Qty1: (");Serial.print(getDrinkAlarmPositionQuantity());Serial.println(")");
-//  ////  EEPROM.write(drinkAlarmPositionsBegin+2,1);Serial.print("drinkAlarmPositionsBegin+2:");Serial.println(EEPROM.read(drinkAlarmPositionsBegin+2));
-//  ////  EEPROM.write(drinkAlarmPositionsBegin+3,1);Serial.print("drinkAlarmPositionsBegin+3:");Serial.println(EEPROM.read(drinkAlarmPositionsBegin+3));
-//  //  Serial.print("Qty2: (");Serial.print(getDrinkAlarmPositionQuantity());Serial.println(")");
-//  int i = 1;
-//  while (i < 26) {
-//    int hour = i - 1;
-//    int minute = i * 2;
-//    Serial.print("\ni: ");                              Serial.print(i);
-//    Serial.print(" - hour: ");                        Serial.print(hour);
-//    Serial.print(" - minute: ");                      Serial.print(minute);
-//    Serial.print(" - addSucess: ");                   Serial.print(addDrinkAlarm(hour, minute));//Serial.print("(ERadd3: ");Serial.print(EEPROM.read(drinkAlarmPositionsBegin + (0) * 2));Serial.print(")");
-//    //    Serial.print(" - quantPostion: ");                Serial.print(getDrinkAlarmPositionQuantity());
-//    //    Serial.print(" - DrinkAlarmNextAlarmPosition: "); Serial.print(getDrinkAlarmNextAlarmPosition(hour,minute));
-//    Serial.print(" - eeprom.hour: ");                 Serial.print(getDrinkAlarmHourFromPosition(i));//Serial.print("(ERadd4: ");Serial.print(EEPROM.read(drinkAlarmPositionsBegin + (0) * 2));Serial.print(")");
-//    Serial.print(" - eeprom.minute: ");               Serial.print(getDrinkAlarmMinuteFromPosition(i) + 1); //Serial.print("(ERadd5: ");Serial.print(EEPROM.read(drinkAlarmPositionsBegin + (0) * 2));Serial.print(")");
-//    //    Serial.print(" - quantPostion: ");                Serial.print(getDrinkAlarmPositionQuantity());
-//    //    Serial.print(" - findDrink(h2/,m/2): ");          Serial.print(findDrinkAlarmPositionFrom(hour/2,minute/2));
-//    //    Serial.print(" - DrinkAlarmNextAlarmPosition(h2/,m/2): "); Serial.println(getDrinkAlarmNextAlarmPosition(hour/2,minute/2));
-//    i++;
-//  }
-//  memory.print();
-//  EEPROM.end();
-//}
+void Memory::drinkAlarmTest() {
+ cleanDrinkAlarmAllPosition();
+  int sinal = 1;
+  int sinal2 = 1;
+  byte minuto = 30;
+  byte hora = 0;
+  if(addDrinkAlarm(10,30)){
+    Serial.println(" adicionado com sucesso");
+  }
+  if(addDrinkAlarm(10,30)){
+    Serial.println(" adicionado com sucesso");
+  }else{
+    Serial.println(" nao adicionado com sucesso");    
+  }
+  
+  for(byte i =0;i<64;i++){
+    if(i%2 == 0){ sinal=1;}else{sinal=-1;}
+    if(i%3==0){sinal2 =-1;}
+    if(i%5==0){sinal2 = 1;}
+    if(i%24 == 0){ minuto = 30;}
+    if(i%4 == 0 ){ hora++;}
+    hora = hora + sinal2;
+    minuto = minuto+i*sinal;
+    addDrinkAlarm(hora,minuto);
+    printDrinkAlarm();
+  }
+  cleanDrinkAlarm(mem.read(drinkAlarmPositionsBegin+62),mem.read(drinkAlarmPositionsBegin+63));
+  printDrinkAlarm();
+  cleanDrinkAlarm(10,10);
+  printDrinkAlarm();
+  for(int i = 0;i<9;i++){
+    cleanDrinkAlarm(mem.read(drinkAlarmPositionsBegin+18),mem.read(drinkAlarmPositionsBegin+19));
+    printDrinkAlarm();
+  }
+  for(int i = 0;i<10;i++){
+    cleanDrinkAlarm(mem.read(drinkAlarmPositionsBegin+6),mem.read(drinkAlarmPositionsBegin+7));
+    printDrinkAlarm();
+  }  
+  for(int i = 0;i<12;i++){
+    cleanDrinkAlarm(mem.read(drinkAlarmPositionsBegin),mem.read(drinkAlarmPositionsBegin+1));
+    printDrinkAlarm();
+  }  
+}
+//
 
+
+
+//----
+
+
+
+
+byte Memory::getAlarmHourFromPosition(byte position, int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize) { // mudar para private
+  return mem.read(AlarmPositionsBegin + (position - 1) * AlarmPositionsSize);
+}
+byte Memory::getAlarmMinuteFromPosition(byte position, int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize) { // mudar para private
+  return mem.read(1+AlarmPositionsBegin + (position - 1) * AlarmPositionsSize);
+}
+byte Memory::getAlarmPositionQuantity(int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize) { // a primeira posicao é 1 - 0 significa vazio
+  byte size = AlarmPositions * AlarmPositionsSize + 1;
+  byte Alarms[size];
+  memset(&Alarms[0], 0, size);
+  mem.read(AlarmPositionsBegin, Alarms, size);
+  byte positionQuantity = 0;
+  byte i = 0;
+  while ( (Alarms[i] != 255) && (i < size - 1) ) {
+    yield();
+    if ( (Alarms[i] != 255) && (Alarms[i + 1] != 255) ) {
+      positionQuantity++;
+    }
+    i++;
+    i++;
+  }
+  return positionQuantity;
+}
+byte Memory::findAlarmPositionFrom(byte hour, byte minute, int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize) {  // a primeira posicao é 1, 0 significa que nao encontrou (ou é vazio)
+  byte size = AlarmPositions * AlarmPositionsSize + 1;
+  byte Alarms[size];
+  memset(&Alarms[0], 0, size);
+  mem.read(AlarmPositionsBegin, Alarms, size);
+  byte i = 0;
+  byte position = 0;
+  while ( (i < size - 1) ) {
+    yield();
+    if ( (Alarms[i] == hour) && (Alarms[i + 1] == minute) ) {
+      position = (i + 2) / 2;
+    }
+    i++;
+    i++;
+  }
+  return position;
+}
+void Memory::cleanAlarmAllPosition(int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize) {
+  byte size = AlarmPositions * AlarmPositionsSize;
+  Serial.print("cleanAlarmAllPosition");
+  byte cleanArray[size];
+  memset(&cleanArray[0], 255, size);
+  mem.write(AlarmPositionsBegin, (byte*)cleanArray, size);
+}
+byte Memory::getAlarmNextAlarmPosition(byte hour, byte minute, int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize) {
+  byte AlarmPositionQuantity = getAlarmPositionQuantity(AlarmPositionsBegin, AlarmPositions, AlarmPositionsSize);
+  if (AlarmPositionQuantity == 0) {
+    return 0;
+  }
+  if (AlarmPositionQuantity == AlarmPositions) {
+    return 0;
+  }
+  byte posicao = 1;
+  if (hour == 0 && minute == 0) {
+    return posicao;
+  }
+  byte size = AlarmPositions * AlarmPositionsSize;
+  byte Alarms[size];
+  memset(&Alarms[0], 0, size);
+  mem.read(AlarmPositionsBegin, Alarms, size);
+  float horaProcurada = (float)hour + ((float)minute) / 60.0;
+  float horaEeprom = (float)Alarms[(posicao - 1) * 2] + ( (float)( Alarms[1 + (posicao - 1) * 2] ) ) / 60.0;
+  while ( (horaProcurada > horaEeprom) ) {
+    if( (posicao) == AlarmPositionQuantity ){
+      return 0;
+    }
+    posicao++;
+    horaEeprom = (float)Alarms[(posicao - 1) * 2] + ( (float)( Alarms[1 + (posicao - 1) * 2] ) ) / 60.0;
+  }
+  Serial.print(" -posicao return:"); Serial.println(posicao);
+  return posicao; 
+}
+byte Memory::getAlarmExactAlarmPosition(byte hour, byte minute, int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize) {
+  byte AlarmPositionQuantity = getAlarmPositionQuantity(AlarmPositionsBegin, AlarmPositions, AlarmPositionsSize);
+  if (AlarmPositionQuantity == 0) {
+    return 0;
+  }
+  byte size = AlarmPositions * AlarmPositionsSize;
+  char Alarms[size];
+  memset(&Alarms[0], 0, size);
+  mem.readChars(AlarmPositionsBegin, Alarms, size);
+  byte posicao = 1;
+  float horaProcurada = (float)hour + ((float)minute) / 60.0;
+  float horaEeprom = (float)Alarms[(posicao - 1) * 2] + ( (float)( Alarms[1 + (posicao - 1) * 2] ) ) / 60.0;
+  while ( horaProcurada != horaEeprom ) {
+    if( (posicao-1) == (AlarmPositionQuantity + 1) ){
+      return 0;
+    }
+    posicao++;
+    horaEeprom = (float)Alarms[(posicao - 1) * 2] + ( (float)( Alarms[1 + (posicao - 1) * 2] ) ) / 60.0;
+  }
+  Serial.print("\n -posicao igual encontrada:"); Serial.print(posicao);
+  Serial.print(" -hora: "); Serial.print(hour);
+  Serial.print(" -minuto: "); Serial.println(minute);
+  return posicao; 
+}
+bool Memory::cleanAlarm(byte hour, byte minute, int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize) {
+  byte AlarmExactAlarmPosition = getAlarmExactAlarmPosition(hour, minute, AlarmPositionsBegin, AlarmPositions, AlarmPositionsSize);
+  if( AlarmExactAlarmPosition == 0 ){
+    return false;
+  }
+  if (AlarmExactAlarmPosition == AlarmPositions) {
+    int hourminute = (((int)255)<<8) + (int)255;
+    mem.writeInt(AlarmPositionsBegin+(AlarmPositions-1)*AlarmPositionsSize, hourminute);
+    return true;
+  }
+
+  byte size = AlarmPositions * AlarmPositionsSize;
+  byte Alarms[size];
+  memset(&Alarms[0], 0, size);
+  mem.read(AlarmPositionsBegin, Alarms, size);
+  byte AlarmPositionQuantity = getAlarmPositionQuantity(AlarmPositionsBegin, AlarmPositions, AlarmPositionsSize);
+  byte positionHour = (AlarmExactAlarmPosition-1)*AlarmPositionsSize;
+  byte positionMinute = (AlarmExactAlarmPosition-1)*AlarmPositionsSize+1;
+  while( positionHour != (AlarmPositionQuantity-1)*AlarmPositionsSize){
+    Alarms[positionHour]   = Alarms[positionHour+2];
+    Alarms[positionMinute] = Alarms[positionMinute+2];
+    positionHour++;
+    positionHour++;
+    positionMinute++;
+    positionMinute++;
+  }
+  Alarms[positionHour]   = 255;
+  Alarms[positionMinute] = 255;
+  mem.write(AlarmPositionsBegin, Alarms, size);
+  return true; 
+}
+bool Memory::addAlarm(byte hour, byte minute, int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize) {// falta verificar se ja existe
+  if( (hour>23) || (minute>59) ){
+    return false;
+  }
+  if( getAlarmExactAlarmPosition(hour, minute, AlarmPositionsBegin, AlarmPositions, AlarmPositionsSize) != 0 ){
+    return false;
+  }
+  byte AlarmPositionQuantity = getAlarmPositionQuantity(AlarmPositionsBegin, AlarmPositions, AlarmPositionsSize);
+  if (AlarmPositionQuantity == AlarmPositions) {
+    return false;
+  }
+  if (AlarmPositionQuantity == 0) {
+    int hourminute = (((int)minute)<<8) + (int)hour;
+    mem.writeInt(AlarmPositionsBegin, hourminute);
+    return true;
+  }
+  byte size = AlarmPositions * AlarmPositionsSize;
+  byte Alarms[size];
+  memset(&Alarms[0], 0, size);
+  mem.read(AlarmPositionsBegin, Alarms, size);
+  byte AlarmNextAlarmPosition = getAlarmNextAlarmPosition(hour,minute, AlarmPositionsBegin, AlarmPositions, AlarmPositionsSize);
+  byte positionHour = AlarmPositionQuantity*AlarmPositionsSize;
+  byte positionMinute = AlarmPositionQuantity*AlarmPositionsSize + 1;
+  while( positionHour != (AlarmNextAlarmPosition-1)*2){
+    Alarms[positionHour]   = Alarms[positionHour-2];
+    Alarms[positionMinute] = Alarms[positionMinute-2];
+    positionHour--;
+    positionHour--;
+    positionMinute--;
+    positionMinute--;
+  }
+  Alarms[positionHour] = hour;
+  Alarms[positionMinute] = minute;
+  mem.write(AlarmPositionsBegin, Alarms, size);
+  return true; 
+}
+void Memory::AlarmTest(int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize) {
+ cleanAlarmAllPosition(AlarmPositionsBegin, AlarmPositions, AlarmPositionsSize);
+  int sinal = 1;
+  int sinal2 = 1;
+  byte minuto = 30;
+  byte hora = 0;
+  if(addAlarm(10,30,AlarmPositionsBegin, AlarmPositions, AlarmPositionsSize)){
+    Serial.println(" adicionado com sucesso");
+  }
+  if(addAlarm(10,30,AlarmPositionsBegin, AlarmPositions, AlarmPositionsSize)){
+    Serial.println(" adicionado com sucesso");
+  }else{
+    Serial.println(" nao adicionado com sucesso");    
+  }
+  
+  for(byte i =0;i<64;i++){
+    if(i%2 == 0){ sinal=1;}else{sinal=-1;}
+    if(i%3==0){sinal2 =-1;}
+    if(i%5==0){sinal2 = 1;}
+    if(i%24 == 0){ minuto = 30;}
+    if(i%4 == 0 ){ hora++;}
+    hora = hora + sinal2;
+    minuto = minuto+i*sinal;
+    addAlarm(hora,minuto,AlarmPositionsBegin, AlarmPositions, AlarmPositionsSize);
+    printAlarm(AlarmPositionsBegin, AlarmPositions, AlarmPositionsSize);
+    Serial.print("\nComparacao: printDrinkAlarm() esta abaixo");
+    printDrinkAlarm();
+  }
+  cleanAlarm(mem.read(AlarmPositionsBegin+62),mem.read(AlarmPositionsBegin+63),AlarmPositionsBegin, AlarmPositions, AlarmPositionsSize);
+  printAlarm(AlarmPositionsBegin, AlarmPositions, AlarmPositionsSize);
+  cleanAlarm(10,10,AlarmPositionsBegin, AlarmPositions, AlarmPositionsSize);
+  printAlarm(AlarmPositionsBegin, AlarmPositions, AlarmPositionsSize);
+  for(int i = 0;i<9;i++){
+    cleanAlarm(mem.read(AlarmPositionsBegin+18),mem.read(AlarmPositionsBegin+19),AlarmPositionsBegin, AlarmPositions, AlarmPositionsSize);
+    printAlarm(AlarmPositionsBegin, AlarmPositions, AlarmPositionsSize);
+  }
+  for(int i = 0;i<10;i++){
+    cleanAlarm(mem.read(AlarmPositionsBegin+6),mem.read(AlarmPositionsBegin+7),AlarmPositionsBegin, AlarmPositions, AlarmPositionsSize);
+    printAlarm(AlarmPositionsBegin, AlarmPositions, AlarmPositionsSize);
+  }  
+  for(int i = 0;i<12;i++){
+    cleanAlarm(mem.read(AlarmPositionsBegin),mem.read(AlarmPositionsBegin+1),AlarmPositionsBegin, AlarmPositions, AlarmPositionsSize);
+    printAlarm(AlarmPositionsBegin, AlarmPositions, AlarmPositionsSize);
+  }  
+}
+
+//----
 /* ------------------------------------------- RTC ------------------------------------------- */
 void Memory::rtcBegin() {
   Serial.print("RTC compiled: ");
