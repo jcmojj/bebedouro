@@ -9,9 +9,14 @@ Service::Service(Memory &memory, Drink &drink) {
 }
 void Service::begin(){
   memory.rtcBegin();
+  _clockInterval = 0;
+  _clockMillis = 0;
 }
 void Service::loop() {
-//  getClockTime();
+  if((_clockMillis-millis()) > _clockInterval){
+    memory.updateClock();
+  }
+  
 }
 /* ------------------------------------------- RTC ------------------------------------------- */
 

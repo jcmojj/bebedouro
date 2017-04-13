@@ -2,6 +2,7 @@
 #define Service_h
 
 #include "Arduino.h"
+#include <RtcDateTime.h>
 
 
 
@@ -70,6 +71,8 @@ class Service{
   private:
     Memory *_memory;
     Drink *_drink;
+    byte _clockInterval;
+    long _clockMillis;
 };
 
 #endif

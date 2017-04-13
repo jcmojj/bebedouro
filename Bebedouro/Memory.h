@@ -23,7 +23,7 @@ RtcDateTime now;
 #define userEmailSpace          2 * 32
 #define serialNumberSpace       1 * 32
 #define drinkAlarmPositions         32
-#define mealAlarmPositions          32 
+#define mealAlarmPositions          32
 #define cleaningAlarmPositions      32
 
 
@@ -54,85 +54,97 @@ RtcDateTime now;
 // Apos ser enviada o numero do dia sempre tera que ser acrescido de 128+64+32
 // Inicializacao devera salvar o numero 128+64+32 na posicao de todos os dias
 
-class Memory{
+class Memory {
   public:
     Memory(Drink &drink, byte drinkSize);
     void memTest();
     void memoryTest();
-    
-    
-    void saveDrinkAtMemory();//no-yes // fazer lembrando de apagar memoria caso esteja cheia
-    void lastDrinkWasSentToServerWithSucess(); //no-yes//fazer
-    byte getNextDrinkToSendToServer(); //no-yes//fazer
-   
+    void preenchendoDrinksParaTeste();
+
+    void saveDrinkAtMemory(); // fazer lembrando de apagar memoria caso esteja cheia
+    void lastDrinkWasSentToServerWithSucess(); //fazer
+    byte getNextDrinkToSendToServer(); //fazer
+
     void cleanMemory();
     void cleanInfoMemory();
-    void cleanDataMemory(); 
-    void cleanDrinkMemoryAtPosition(byte position); //no-yes
-    
-    void print(); 
-    void printInfo(); 
+    void cleanDataMemory();
+    void cleanDrinkMemoryAtPosition(byte position);
+
+    void print();
+    void printInfo();
     void printData();
     void printEmail();
+    void printSerialNumber();
     void printDrinkAlarm();
     void printMealAlarm();
     void printCleaningAlarm();
-     
-    void preenchendoDrinksParaTeste(); //no
-    void printDrinkFromPosition(byte position); //no-yes
-    void getDrinkFromPosition(byte position); //no-yes
-    void setDrinkAtPosition(byte position); //no-yes
 
-    byte getLastUsedPositionFromBeginScan(); //no-yes
-    byte getLastUsedPositionFromEndScan(); //no-yes
+    void printDrinkFromPosition(byte position);
+    void getDrinkFromPosition(byte position);
+    void setDrinkAtPosition(byte position);
 
-    byte getNextPositionToWriteDrink(); //no-yes
-    byte getNextPositionToCleanDrink(); //no-yes
-    byte getNextPositionToReadDrink(); //no-yes
+    byte getLastUsedPositionFromBeginScan();
+    byte getLastUsedPositionFromEndScan();
 
-    void getUserEmail(char *  );
+    byte getNextPositionToWriteDrink();
+    byte getNextPositionToCleanDrink();
+    byte getNextPositionToReadDrink();
+
+    void getUserEmail(char *email  );
     void setUserEmail(const char *email);
     void emailTest();
-
-
-
-//    byte getDrinkAlarmPositionQuantity(); //0=sem posicao - 1<=posicao<=25 //no
-//    bool addDrinkAlarm(byte hour, byte minute); //no
-//    byte findDrinkAlarmPositionFrom(byte hour, byte minute); //no
-//    bool cleanDrinkAlam(byte hour, byte minute); //no
-//    byte getDrinkAlarmHourFromPosition(byte position); //no
-//    byte getDrinkAlarmMinuteFromPosition(byte position); //no
-//    byte getDrinkAlarmNextAlarmPosition(byte hour, byte minute); //0=sem posicao - 1<=posicao<=25 //no
-//    void cleanDrinkAlarmAllPosition(); //no
-//    void DrinkAlarmTest(); //no
-
     
-//    void rtcLoop();
-    void getClockTime();
-//    void setClockTime(uint16_t year, uint8_t month, uint8_t dayOfMonth, uint8_t hour, uint8_t minute, uint8_t second);
-//    void printDateTime(const RtcDateTime& dt);
-//    void printNowDateTime();    
-    bool isDateTimeValid();
+    void getSN(char *sn  );
+    void setSN(const char *sn);
+    void snTest();
+
+
+        byte getDrinkAlarmPositionQuantity(); //0=sem posicao - 1<=posicao<=25 //no
+        bool addDrinkAlarm(byte hour, byte minute); //no
+        byte findDrinkAlarmPositionFrom(byte hour, byte minute); //no
+    //    bool cleanDrinkAlam(byte hour, byte minute); //no
+        byte getDrinkAlarmHourFromPosition(byte position); //no
+        byte getDrinkAlarmMinuteFromPosition(byte position); //no
+        byte getDrinkAlarmNextAlarmPosition(byte hour, byte minute); //0=sem posicao - 1<=posicao<=25 //no
+        void cleanDrinkAlarmAllPosition(); //no
+    //    void DrinkAlarmTest(); //no
+
+
+    //    void rtcLoop();
+    void  updateClock();
+    void  setClockDateTime(uint16_t year, uint8_t month, uint8_t dayOfMonth, uint8_t hour, uint8_t minute, uint8_t second);
+    void  printDateTime(const RtcDateTime& dt);
+    void  printNowDateTime();
+    bool  isDateTimeValid();
     float getTemperature();
-    byte getTemperatureFromFloatToByte(float temp);
+    byte  getTemperatureFromFloatToByte(float temp);
     float getTemperatureFromByteToFloat(byte temp);
-    void printTemperature();
-    void rtcBegin();
-//    void atualizarAlarmes();
-    
+    void  printTemperature();
+    void  rtcBegin();
+    uint16_t getYear();
+    uint8_t  getMonth();
+    uint8_t  getDay();
+    uint8_t  getHour();
+    uint8_t  getMinute();
+    uint8_t  getSecond();
+
+
+
+    //    void atualizarAlarmes();
+
   private:
     int getNextPositionAvailable();
     Drink *_drink;
     int _size;
     byte _drinkSize;
     RtcDateTime now;
-//    uint8_t readByte(uint16_t address);
-//    void writeByte(uint16_t address, uint8_t value);
+    //    uint8_t readByte(uint16_t address);
+    //    void writeByte(uint16_t address, uint8_t value);
     At24c32 mem;
-//    JsonObject& _jsonDrink;
+    //    JsonObject& _jsonDrink;
 
 
-  
+
 };
 
 

@@ -12,17 +12,66 @@ Memory::Memory(Drink &drink, byte drinkSize) {
   rtc.Begin();
   _drink = &drink;
   _drinkSize = drinkSize;
-  
+
 }
 void Memory::memoryTest() {
-  //  memTest();// longo
-  //  print();
+  //    memTest();// longo
+  //    print();
   //  emailTest();
   //  print();
-//    cleanMemory();
-  print();
-  preenchendoDrinksParaTeste();
-  print();
+  //  cleanInfoMemory();
+  //  printInfo();
+  //  print();
+  //  preenchendoDrinksParaTeste();
+  cleanDrinkAlarmAllPosition();
+  int sinal = 1;
+  int sinal2 = 1;
+  byte minuto = 30;
+  byte hora = 0;
+  for(byte i =0;i<64;i++){
+    if(i%2 == 0){ sinal=1;}else{sinal=-1;}
+    if(i%3==0){sinal2 =-1;}
+    if(i%5==0){sinal2 = 1;}
+    if(i%24 == 0){ minuto = 30;}
+    if(i%4 == 0 ){ hora++;}
+    hora = hora + sinal2;
+    minuto = minuto+i*sinal;
+    addDrinkAlarm(hora,minuto);
+    printDrinkAlarm();
+  }
+  
+  
+//  mem.write(drinkAlarmPositionsBegin,8);
+//  mem.write(drinkAlarmPositionsBegin+1,30);
+//  mem.write(drinkAlarmPositionsBegin+2,9);
+//  mem.write(drinkAlarmPositionsBegin+3,15);
+//  printDrinkAlarm();
+//  Serial.print("Quantity: "); Serial.println(getDrinkAlarmPositionQuantity());
+//  Serial.print("find 8:30: "); Serial.println(findDrinkAlarmPositionFrom(8,30));
+//  Serial.print("find 9:15: "); Serial.println(findDrinkAlarmPositionFrom(9,15));
+//  Serial.print("find 10h: "); Serial.println(findDrinkAlarmPositionFrom(10,00));
+//  printDrinkAlarm();
+//  Serial.print("Next alarm: "); Serial.println(getDrinkAlarmNextAlarmPosition(10,30));
+//  if(addDrinkAlarm(10,30)){
+//    Serial.println(" adicionado com sucesso");
+//  }
+////  cleanDrinkAlarmAllPosition();
+//  printDrinkAlarm();
+//  Serial.print("\nNext alarm: "); Serial.println(getDrinkAlarmNextAlarmPosition(12,30));
+//  if(addDrinkAlarm(12,30)){
+//    Serial.println(" adicionado com sucesso");
+//  }
+//  printDrinkAlarm();
+//  Serial.print("\nNext alarm: "); Serial.println(getDrinkAlarmNextAlarmPosition(8,00));
+//  if(addDrinkAlarm(8,0)){
+//    Serial.println(" adicionado com sucesso");
+//  }
+//  printDrinkAlarm();
+//  Serial.print("\nNext alarm: "); Serial.println(getDrinkAlarmNextAlarmPosition(12,0));
+//  if(addDrinkAlarm(12,0)){
+//    Serial.println(" adicionado com sucesso");
+//  }
+//  printDrinkAlarm();
   //  getDrinkAlarmPositionQuantity();
   //  print();
   //  memTest();// longo
@@ -726,14 +775,9 @@ void Memory::memTest() {
     Serial.print(endereco);
     Serial.print(" read email: ");
     Serial.println(emailLido);
-
-
   }
-  emailTest();
 }// FIM ---------------------------------------------------------------->>> memTest
-
-
-void  Memory::emailTest() {
+void Memory::emailTest() {
   char emailTeste[] = "jcmojj@gmail.com";
   memory.setUserEmail(emailTeste);
   char emailBuffer[userEmailSpace + 1];
@@ -752,7 +796,39 @@ void  Memory::emailTest() {
   memory.getUserEmail(emailBuffer);
   Serial.print("emailTeste: "); Serial.println(emailTeste);
   Serial.print("emailBuffer: "); Serial.println(emailBuffer);
-}// FIM ---------------------------------------------------------------->>> emailTest
+}
+void Memory::snTest() {
+  char sn[] = "ABCDEFfchgkvjhlbjd324&ˆ$#!@&*()/ sfd\fsdf\fdsf/";
+  memory.setSN(sn);
+  char snBuffer[serialNumberSpace + 1];
+  memory.getSN(sn);
+  Serial.println("Testando Gravacao de Serial Number");
+  Serial.print("sn: "); Serial.println(sn);
+  Serial.print("snBuffer: "); Serial.println(snBuffer);
+
+  Serial.println("");
+  char sn2[] = "snmojj@gmail.comsnmojj@gmail.comsnmojj@gmail.comsnmojj@gmail.com";
+  memory.setSN(sn2);
+  Serial.print("sn: "); Serial.println(sn);
+  Serial.print("snBuffer: "); Serial.println(snBuffer);
+
+  Serial.println("");
+  memory.getSN(sn2);
+  Serial.print("sn: "); Serial.println(sn);
+  Serial.print("snBuffer: "); Serial.println(snBuffer);
+}
+void Memory::preenchendoDrinksParaTeste() {
+  cleanDataMemory();
+  for (byte mes = 1; mes < 11 ; mes++) {
+    for (byte dia = 1; dia < 30 ; dia ++) {
+      yield();
+      drink.setValue(dia, mes, 1984, 9, 50, 30, 57, 'c', 111, 0, 0);
+      saveDrinkAtMemory();
+    }
+  }
+  Serial.println("Memoria Preenchida para Teste");
+}
+
 
 void Memory::saveDrinkAtMemory() {
   yield();
@@ -786,7 +862,7 @@ void Memory::getDrinkFromPosition(byte position) {
   memset(&drinkArray[0], 48, _drinkSize);
   int address =  dataMemoryBegin + _drinkSize * (position - 1);
   mem.read(address, (byte*)drinkArray, _drinkSize);
-  address=0;
+  address = 0;
   _drink->setDia(drinkArray[address++]);
   _drink->setMes(drinkArray[address++]);
   int ano = ((int)(drinkArray[address++])) << 8;
@@ -895,17 +971,6 @@ byte Memory::getNextPositionToReadDrink() {
   }
 }
 
-void Memory::preenchendoDrinksParaTeste() {
-  cleanDataMemory();
-  for (byte mes = 1; mes < 11 ; mes++) {
-    for (byte dia = 1; dia < 30 ; dia ++) {
-      yield();
-      drink.setValue(dia, mes, 1984, 9, 50, 30, 57, 'c', 111, 0, 0);
-      saveDrinkAtMemory();
-    }
-  }
-  Serial.println("Memoria Preenchida para Teste");
-}
 void Memory::print() {
   printInfo();
   printData();
@@ -930,9 +995,58 @@ void Memory::printInfo() {
   Serial.print("Memoria Total Livre: ");  Serial.print(4096 - memUsada);
   yield();
   printEmail();
+  printSerialNumber();
   printDrinkAlarm();
   printMealAlarm();
   printCleaningAlarm();
+}
+void Memory::printData() {
+  yield();
+  uint8_t value = 0;
+  Serial.print("\n");
+  Serial.println("Data Memory");
+  Serial.print("(address= "); if (dataMemoryBegin < 100) {
+    Serial.print(" ");
+  } if (dataMemoryBegin < 10) {
+    Serial.print(" ");
+  } Serial.print(dataMemoryBegin); Serial.print(")");
+  Serial.print("(Position=  1)");
+  for (int address = dataMemoryBegin; address <= dataMemoryEnd; address++) {
+    yield();
+    value = mem.read(address);
+    if (value < 100) {
+      Serial.print(" ");
+    } if (value < 10) {
+      Serial.print(" ");
+    }
+    Serial.print(value, DEC);
+
+    if ((address + 1 - dataMemoryBegin) % _drinkSize == 0) {
+      Serial.print("-(address="); if (address < 100) {
+        Serial.print(" ");
+      } if (address < 10) {
+        Serial.print(" ");
+      } Serial.print(address); Serial.print(")");
+      Serial.println("");
+      if (address != dataMemoryEnd) {
+        Serial.print("(address="); if (address < 1000) {
+          Serial.print(" ");
+        } if (address < 100) {
+          Serial.print(" ");
+        } if (address < 10) {
+          Serial.print(" ");
+        } Serial.print(address + 1); Serial.print(")");
+        Serial.print("(Position="); if ((2 + (address - dataMemoryBegin) / _drinkSize) < 100) {
+          Serial.print(" ");
+        } if ((2 + (address - dataMemoryBegin) / _drinkSize) < 10) {
+          Serial.print(" ");
+        } Serial.print(2 + (address - dataMemoryBegin) / _drinkSize); Serial.print(")");
+      }
+      yield();
+    } else {
+      Serial.print("-");
+    }
+  }
 }
 void Memory::printEmail() {
   uint8_t value = 0;
@@ -960,6 +1074,46 @@ void Memory::printEmail() {
       } Serial.print(address); Serial.print(")");
       Serial.println("");
       if (address != userEmailEnd) {
+        Serial.print("(address=");
+        if ((address + 1) < 100) {
+          Serial.print(" ");
+        } if ((address + 1) < 10) {
+          Serial.print(" ");
+        } Serial.print(address + 1);
+        Serial.print(")-");
+      }
+      yield();
+    } else {
+      Serial.print("-");
+    }
+  }
+}
+void Memory::printSerialNumber() {
+  uint8_t value = 0;
+  Serial.print("\n");
+  Serial.println("Serial Number Memory");
+  Serial.print("(address="); if (serialNumberBegin < 100) {
+    Serial.print(" ");
+  } if (serialNumberBegin < 10) {
+    Serial.print(" ");
+  } Serial.print(serialNumberBegin); Serial.print(")-");
+  for (int address = serialNumberBegin; address <= serialNumberEnd; address++) {
+    yield();
+    value = mem.read(address);
+    if (value < 100) {
+      Serial.print(" ");
+    } if (value < 10) {
+      Serial.print(" ");
+    }
+    Serial.print(value, DEC);
+    if ((address + 1) % 16 == 0) {
+      Serial.print("-(address="); if (address < 100) {
+        Serial.print(" ");
+      } if (address < 10) {
+        Serial.print(" ");
+      } Serial.print(address); Serial.print(")");
+      Serial.println("");
+      if (address != serialNumberEnd) {
         Serial.print("(address=");
         if ((address + 1) < 100) {
           Serial.print(" ");
@@ -1094,54 +1248,6 @@ void Memory::printCleaningAlarm() {
     }
   }
 }
-void Memory::printData() {
-  yield();
-  uint8_t value = 0;
-  Serial.print("\n");
-  Serial.println("Data Memory");
-  Serial.print("(address= "); if (dataMemoryBegin < 100) {
-    Serial.print(" ");
-  } if (dataMemoryBegin < 10) {
-    Serial.print(" ");
-  } Serial.print(dataMemoryBegin); Serial.print(")");
-  Serial.print("(Position=  1)");
-  for (int address = dataMemoryBegin; address <= dataMemoryEnd; address++) {
-    yield();
-    value = mem.read(address);
-    if (value < 100) {
-      Serial.print(" ");
-    } if (value < 10) {
-      Serial.print(" ");
-    }
-    Serial.print(value, DEC);
-
-    if ((address + 1 - dataMemoryBegin) % _drinkSize == 0) {
-      Serial.print("-(address="); if (address < 100) {
-        Serial.print(" ");
-      } if (address < 10) {
-        Serial.print(" ");
-      } Serial.print(address); Serial.print(")");
-      Serial.println("");
-      if (address != dataMemoryEnd) {
-        Serial.print("(address="); if (address < 1000) {
-          Serial.print(" ");
-        } if (address < 100) {
-          Serial.print(" ");
-        } if (address < 10) {
-          Serial.print(" ");
-        } Serial.print(address + 1); Serial.print(")");
-        Serial.print("(Position="); if ((2 + (address - dataMemoryBegin) / _drinkSize) < 100) {
-          Serial.print(" ");
-        } if ((2 + (address - dataMemoryBegin) / _drinkSize) < 10) {
-          Serial.print(" ");
-        } Serial.print(2 + (address - dataMemoryBegin) / _drinkSize); Serial.print(")");
-      }
-      yield();
-    } else {
-      Serial.print("-");
-    }
-  }
-}
 
 void Memory::cleanMemory() {
   yield();
@@ -1153,37 +1259,40 @@ void Memory::cleanInfoMemory() {
   byte cleanArray[30];
   byte size = sizeof(cleanArray);
   memset(&cleanArray[0], 0, size);
-//  Serial.print("cleanArray: ");
-//  for (int i = 0; i < sizeof(cleanArray); i++) {
-//    Serial.print(cleanArray[i]); Serial.print("-");
-//  }
+  Serial.print("cleanArray: ");
+  for (int i = 0; i < sizeof(cleanArray); i++) {
+    Serial.print(cleanArray[i]); Serial.print("-");
+  }
 
   byte cleanArray2[30];
   byte size2 = sizeof(cleanArray2);
   memset(&cleanArray2[0], 255, size2);
-//  Serial.print("cleanArray2: ");
-//  for (int i = 0; i < sizeof(cleanArray2); i++) {
-//    Serial.print(cleanArray2[i]); Serial.print("-");
-//  }
+  Serial.print("cleanArray2: ");
+  for (int i = 0; i < sizeof(cleanArray2); i++) {
+    Serial.print(cleanArray2[i]); Serial.print("-");
+  }
 
   for (int address = infoByteBegin; address <= infoByteEnd; ) {
     yield();
-    if ( address < (userEmailEnd - size) ) {
+    if ( address < (serialNumberEnd - size) ) {
       mem.write(address, (byte*)cleanArray, size);
       address = address + size;
-    } else if (address < userEmailEnd) {
+    } else if (address < serialNumberEnd) {
       mem.write(address, 0);
       address++;
     } else if ( address < (infoByteEnd - size2) ) {
       mem.write(address, (byte*)cleanArray2, size2);
-      address = address + size;
+      address = address + size2;
     } else {
       mem.write(address, 255);
       address++;
     }
-    Serial.print("Address: "); Serial.println(address);
+    Serial.print("cleanInfoMemory-Address: "); Serial.println(address);
   }
   Serial.println("\nInfo has been clean!");
+  //  mem.write(drinkAlarmPositionsBegin,18);
+  //  mem.write(mealAlarmPositionsBegin,18);
+  //  mem.write(cleaningAlarmPositionsBegin,18);
 }
 void Memory::cleanDataMemory() {
   yield();
@@ -1230,87 +1339,99 @@ void Memory::setUserEmail(const char email[]) {
   strncpy(emailCorreto, email, sizeof(emailCorreto));
   mem.writeChars(userEmailBegin, emailCorreto, userEmailSpace);
 }
+void Memory::getSN(char sn[]) {
+  yield();
+  //  byte size = userEmailSpace+1;
+  //  char email[size];
+  memset(&sn[0], 0, serialNumberSpace + 1);
+  mem.readChars(serialNumberBegin, sn, serialNumberSpace);
+}
+void Memory::setSN(const char sn[]) {
+  yield();
+  char snCorreto[serialNumberSpace + 1];
+  memset(&snCorreto[0], 0, sizeof(snCorreto));//limpando
+  Serial.print("sizeof(emailCorreto): "); Serial.println(sizeof(snCorreto));
+  Serial.print("sizeof(sn): "); Serial.println(sizeof(sn));
+  strncpy(snCorreto, sn, sizeof(snCorreto));
+  mem.writeChars(serialNumberBegin, snCorreto, serialNumberSpace);
+}
 
 
 /* --------------------------------- Alarm --------------------------------- */
 
-
-//byte Memory::getDrinkAlarmPositionQuantity() {
-//  //  EEPROM.begin(memorySize);
-//  uint16_t quantidade = 0;
-//  Serial.print(" getQty:");
-//  while ((mem.read(drinkAlarmPositionsBegin + (quantidade) * 2) != 255) && (quantidade < drinkAlarmPositions)) {
-//    //    Serial.print("\n - (drinkAlarmPositionsBegin + (quantidade) * 2): "); Serial.print((drinkAlarmPositionsBegin + (quantidade) * 2));
-//    //    Serial.print(" - 1Eepromread: "); Serial.print(readByte(drinkAlarmPositionsBegin + (quantidade) * 2));
-//    Serial.print(" - quant:"); Serial.print(quantidade);
-//    quantidade++;
+byte Memory::getDrinkAlarmPositionQuantity() { // a primeira posicao é 1 - 0 significa vazio
+  byte size = drinkAlarmPositions * drinkAlarmPositionsSize + 1;
+  char drinkAlarms[size];
+  memset(&drinkAlarms[0], 0, size);
+  mem.readChars(drinkAlarmPositionsBegin, drinkAlarms, size);
+//  Serial.println("drinkAlarms: ");
+//  for (int i = 0; i < sizeof(drinkAlarms); i++) {
+//    Serial.print("i= "); Serial.print(i);
+//    Serial.print("  -drinkAlarms[i]:"); Serial.print(drinkAlarms[i]);
 //  }
-//  //  EEPROM.end();
-//  return 0;
-//
-//}
-//byte Memory::findDrinkAlarmPositionFrom(byte hour, byte minute) {
-//  EEPROM.begin(memorySize);
-//  if (getDrinkAlarmPositionQuantity() == 0) {
-//    return 0;
-//  }
-//  byte position = 1;
-//  while (( EEPROM.read(drinkAlarmPositionsBegin + (position - 1) * 2) != hour ) && ( EEPROM.read(drinkAlarmPositionsBegin + 1 + (position - 1) * 2) != minute )) {
-//    position++;
-//    yield();
-//    if ( position == drinkAlarmPositions + 1) {
-//      position = 0;
-//      break;
-//    }
-//  }
-//  return position;
-//  EEPROM.end();
-//}
-//bool Memory::addDrinkAlarm(byte hour, byte minute) {
-//  //  EEPROM.begin(memorySize);
-//  Serial.print("add");
-//  float horarioAdd = hour + ((float)minute) / 60;
-//  byte quantidade = getDrinkAlarmPositionQuantity();
-//  float maiorHorario;
-//  if (quantidade == 0) {
-//    maiorHorario = 0;
-//  } else {
-//    maiorHorario = readByte( drinkAlarmPositionsBegin + 2 * (quantidade - 1) ) + ((float)( readByte( 1 + drinkAlarmPositionsBegin + 2 * (quantidade - 1) ) )) / 60;
-//  }
-//
-//
-//  Serial.print(" - horarioAdd: "); Serial.print(horarioAdd); Serial.print(" - maiorHorario: "); Serial.print(maiorHorario); Serial.print(" - quantidade: "); Serial.println(quantidade);
-//  if ( quantidade == 25 ) {
-//    //    EEPROM.end();
-//    return false;
-//  } else if ( quantidade == 0 ) {
-//    Serial.println("In(0)");
-//    writeByte(drinkAlarmPositionsBegin, hour);//EEPROM.commit();
-//    Serial.print("(ERadd0h: "); Serial.print(readByte(drinkAlarmPositionsBegin)); Serial.print(")");
-//    writeByte(drinkAlarmPositionsBegin + 1, minute);//EEPROM.commit();
-//    Serial.print("(ERadd0m: "); Serial.print(readByte(drinkAlarmPositionsBegin + 1)); Serial.print(")");
-//  } else if ( horarioAdd > maiorHorario ) {
-//    Serial.print("In(maior)");
-//    writeByte(drinkAlarmPositionsBegin + 2 * (getDrinkAlarmPositionQuantity()), hour); //EEPROM.commit();
-//    writeByte(1 + drinkAlarmPositionsBegin + 2 * (getDrinkAlarmPositionQuantity()), minute); //EEPROM.commit();
-//  } else {
-//    byte Posicao = getDrinkAlarmNextAlarmPosition(hour, minute) - 1;
-//    for (byte address = drinkAlarmPositionsBegin + getDrinkAlarmPositionQuantity() * 2 ;
-//         address < (drinkAlarmPositionsBegin + (Posicao - 1) * 2) ;
-//         address = address - 2) {
-//      Serial.println("\nDENTRO FOR DO ADD");
-//      writeByte(address, hour);//EEPROM.commit();
-//      writeByte(address + 1, minute);//EEPROM.commit();
-//      yield();
-//    }
-//    writeByte(drinkAlarmPositionsBegin + (getDrinkAlarmNextAlarmPosition(hour, minute) - 1) * 2, hour); EEPROM.commit();
-//    writeByte(drinkAlarmPositionsBegin + 1 + (getDrinkAlarmNextAlarmPosition(hour, minute) - 1) * 2, minute); EEPROM.commit();
-//  }
-//  //  Serial.print("(ERadd2: ");Serial.print(readByte(drinkAlarmPositionsBegin + (0) * 2));Serial.print(")");
-//  //  EEPROM.end();
-//  return true;
-//
-//}
+  byte positionQuantity = 0;
+  byte i = 0;
+  while ( (drinkAlarms[i] != 255) && (i < size - 1) ) {
+    yield();
+    if ( (drinkAlarms[i] != 255) && (drinkAlarms[i + 1] != 255) ) {
+      positionQuantity++;
+    }
+    i++;
+    i++;
+  }
+  return positionQuantity;
+}
+byte Memory::findDrinkAlarmPositionFrom(byte hour, byte minute) {  // a primeira posicao é 1, 0 significa que nao encontrou (ou é vazio)
+  byte size = drinkAlarmPositions * drinkAlarmPositionsSize + 1;
+  char drinkAlarms[size];
+  memset(&drinkAlarms[0], 0, size);
+  mem.readChars(drinkAlarmPositionsBegin, drinkAlarms, size);
+  byte i = 0;
+  byte position = 0;
+  while ( (i < size - 1) ) {
+    yield();
+    if ( (drinkAlarms[i] == hour) && (drinkAlarms[i + 1] == minute) ) {
+      position = (i + 2) / 2;
+    }
+    i++;
+    i++;
+  }
+  return position;
+}
+bool Memory::addDrinkAlarm(byte hour, byte minute) {// falta verificar se ja existe
+  if( (hour>23) || (minute>59) ){
+    return false;
+  }
+  byte DrinkAlarmPositionQuantity = getDrinkAlarmPositionQuantity();
+  Serial.print(" -DrinkAlarmPositionQuantity:"); Serial.println(DrinkAlarmPositionQuantity);
+  if (DrinkAlarmPositionQuantity == drinkAlarmPositions) {
+    return false;
+  }
+  if (DrinkAlarmPositionQuantity == 0) {
+    int hourminute = (((int)minute)<<8) + (int)hour;
+    mem.writeInt(drinkAlarmPositionsBegin, hourminute);
+    return true;
+  }
+  byte size = drinkAlarmPositions * drinkAlarmPositionsSize;
+  char drinkAlarms[size];
+  memset(&drinkAlarms[0], 0, size);
+  mem.readChars(drinkAlarmPositionsBegin, drinkAlarms, size);
+  byte DrinkAlarmNextAlarmPosition = getDrinkAlarmNextAlarmPosition(hour,minute);
+  byte positionHour = size - 2;
+  byte positionMinute = size - 1;
+  while( positionHour != (DrinkAlarmNextAlarmPosition-1)*2){
+    drinkAlarms[positionHour]   = drinkAlarms[positionHour-2];
+    drinkAlarms[positionMinute] = drinkAlarms[positionMinute-2];
+    positionHour--;
+    positionHour--;
+    positionMinute--;
+    positionMinute--;
+  }
+  drinkAlarms[positionHour] = hour;
+  drinkAlarms[positionMinute] = minute;
+  mem.writeChars(drinkAlarmPositionsBegin, drinkAlarms, size);
+  return true; 
+}
 //bool Memory::cleanDrinkAlam(byte hour, byte minute) {
 //  EEPROM.begin(memorySize);
 //  if (findDrinkAlarmPositionFrom(hour, minute) != 0) {
@@ -1320,51 +1441,63 @@ void Memory::setUserEmail(const char email[]) {
 //  return 0;
 //  EEPROM.end();
 //}
-//byte Memory::getDrinkAlarmHourFromPosition(byte position) {
-//  EEPROM.begin(memorySize);
-//  //  if (getDrinkAlarmPositionQuantity() == 0) {
-//  //    return 255;
-//  //  }
-//  yield();
-//  return (byte)EEPROM.read(drinkAlarmPositionsBegin + (position - 1) * 2);
-//  EEPROM.end();
-//}
-//byte Memory::getDrinkAlarmMinuteFromPosition(byte position) {
-//  EEPROM.begin(memorySize);
-//  //  if (getDrinkAlarmPositionQuantity() == 0) {
-//  //    return 255;
-//  //  }
-//  yield();
-//  return (byte)EEPROM.read(drinkAlarmPositionsBegin + 1 + (position - 1) * 2);
-//  EEPROM.end();
-//}
-//byte Memory::getDrinkAlarmNextAlarmPosition(byte hour, byte minute) {
-//  EEPROM.begin(memorySize);
-//  if (getDrinkAlarmPositionQuantity() == 0) {
-//    return 0;
-//  }
-//  byte posicao = 1;
-//  if (hour == 0 && minute == 0) {
-//    return posicao;
-//  }
-//  float horaProcurada = hour + ((float)minute) / 60;
-//  float horaEeprom = EEPROM.read(drinkAlarmPositionsBegin) + ((float)((byte)EEPROM.read(drinkAlarmPositionsBegin + 1))) / 60;
-//  while ((posicao != getDrinkAlarmPositionQuantity()) || (horaProcurada > horaEeprom)) {
-//    horaEeprom = EEPROM.read(drinkAlarmPositionsBegin + (posicao - 1) * 2) + ((float)((byte)EEPROM.read(1 + drinkAlarmPositionsBegin + (posicao - 1) * 2))) / 60;
-//    posicao++;
+byte Memory::getDrinkAlarmHourFromPosition(byte position) {
+  return mem.read(drinkAlarmPositionsBegin + (position - 1) * 2);
+}
+byte Memory::getDrinkAlarmMinuteFromPosition(byte position) {
+  return mem.read(drinkAlarmPositionsBegin + 1 + (position - 1) * 2);
+}
+byte Memory::getDrinkAlarmNextAlarmPosition(byte hour, byte minute) {
+  byte DrinkAlarmPositionQuantity = getDrinkAlarmPositionQuantity();
+  if (DrinkAlarmPositionQuantity == 0) {
+    return 0;
+  }
+  if (DrinkAlarmPositionQuantity == drinkAlarmPositions) {
+    return 0;
+  }
+  byte posicao = 1;
+  if (hour == 0 && minute == 0) {
+    return posicao;
+  }
+  byte size = drinkAlarmPositions * drinkAlarmPositionsSize;
+  char drinkAlarms[size];
+  memset(&drinkAlarms[0], 0, size);
+  mem.readChars(drinkAlarmPositionsBegin, drinkAlarms, size);
+  byte i = 0;
+  float horaProcurada = (float)hour + ((float)minute) / 60.0;
+  float horaEeprom = (float)drinkAlarms[(posicao - 1) * 2] + ( (float)( drinkAlarms[1 + (posicao - 1) * 2] ) ) / 60.0;
+  Serial.println("\n\ngetDrinkAlarmNextAlarmPosition");
+  Serial.print(" -i:"); Serial.println(i); 
+  Serial.print(" -hour:"); Serial.println(hour);
+//  Serial.print(" -minute:"); Serial.println(minute);
+//  Serial.print(" -horaProcurada:"); Serial.println(horaProcurada);
+//  Serial.print(" -horaEeprom:"); Serial.println(horaEeprom,2);
+  while ( ((posicao-1) != DrinkAlarmPositionQuantity) && (horaProcurada > horaEeprom) ) {
+    posicao++;
+    horaEeprom = (float)drinkAlarms[(posicao - 1) * 2] + ( (float)( drinkAlarms[1 + (posicao - 1) * 2] ) ) / 60.0;
+//    Serial.println("\n\nWhile");
+//    Serial.print(" -horaProcurada:"); Serial.println(horaProcurada);
+//    Serial.print(" -horaEeprom:"); Serial.println(horaEeprom,2);
+//    Serial.print(" -posicao:"); Serial.println(posicao);
+//    Serial.print(" -DrinkAlarmPositionQuantity:"); Serial.println(DrinkAlarmPositionQuantity);
+//    Serial.print(" -drinkAlarms[(posicao - 1) * 2]:"); Serial.println(drinkAlarms[(posicao - 1) * 2]);
+//    Serial.print(" -(float)drinkAlarms[(posicao - 1) * 2]:"); Serial.println((float)drinkAlarms[(posicao - 1) * 2],2);
+//    Serial.print(" -( drinkAlarms[1 + (posicao - 1) * 2] ):"); Serial.println(( drinkAlarms[1 + (posicao - 1) * 2] ));
+//    Serial.print(" -(float)( drinkAlarms[1 + (posicao - 1) * 2] ):"); Serial.println((float)( drinkAlarms[1 + (posicao - 1) * 2] ),2);
+//    Serial.print(" -( (float)( drinkAlarms[1 + (posicao - 1) * 2] ) ) / 60.0:"); Serial.println(( (float)( drinkAlarms[1 + (posicao - 1) * 2] ) ) / 60.0,2);
+//    Serial.print(" -(float)drinkAlarms[(posicao - 1) * 2] + ( (float)( drinkAlarms[1 + (posicao - 1) * 2] ) ) / 60.0:"); Serial.println((float)drinkAlarms[(posicao - 1) * 2] + ( (float)( drinkAlarms[1 + (posicao - 1) * 2] ) ) / 60.0);
 //    yield();
-//  }
-//  return posicao;
-//  EEPROM.end();
-//}
-//void Memory::cleanDrinkAlarmAllPosition() {
-//  EEPROM.begin(memorySize);
-//  for (int address = drinkAlarmPositionsBegin; address < (drinkAlarmPositionsEnd + 1); address++) {
-//    EEPROM.write(address, 255);
-//  }
-//  yield();
-//  EEPROM.end();
-//}
+  }
+  Serial.print(" -posicao return:"); Serial.println(posicao);
+  return posicao; 
+}
+void Memory::cleanDrinkAlarmAllPosition() {
+  byte size = drinkAlarmPositions * drinkAlarmPositionsSize;
+  Serial.print("cleanDrinkAlarmAllPosition");
+  byte cleanArray[size];
+  memset(&cleanArray[0], 255, size);
+  mem.write(drinkAlarmPositionsBegin, (byte*)cleanArray, size);
+}
 //void Memory::DrinkAlarmTest() {
 //  EEPROM.begin(memorySize);
 //  Serial.println("Dentro drink");
@@ -1400,7 +1533,7 @@ void Memory::setUserEmail(const char email[]) {
 //}
 
 /* ------------------------------------------- RTC ------------------------------------------- */
-void Memory::rtcBegin(){
+void Memory::rtcBegin() {
   Serial.print("RTC compiled: ");
   Serial.print(__DATE__);
   Serial.print(" ");
@@ -1453,18 +1586,16 @@ void Memory::rtcBegin(){
   //    rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone);
   rtc.SetSquareWavePin(DS3231SquareWavePin_ModeAlarmBoth);
   printTemperature();
-  getClockTime();
-//  atualizarAlarmes();
+  updateClock();
+  //  atualizarAlarmes();
 }
-//void rtcLoop(){
-////  getClockTime();
-//}
+
 //void Memory::atualizarAlarmes(){
 
-//   // Alarm 1 set to trigger every day when 
+//   // Alarm 1 set to trigger every day when
 //  // the hours, minutes, and seconds match
 //  RtcDateTime alarmTime = now + 88; // into the future
-//  
+//
 //  DS3231AlarmOne alarm1( // momento de lavar pote
 //    alarmTime.Day(),
 //    alarmTime.Hour(),
@@ -1483,92 +1614,102 @@ void Memory::rtcBegin(){
 //
 //  // throw away any old alarm state before we ran
 //  rtc.LatchAlarmsTriggeredFlags();
-  
+
 //}
-void Memory::getClockTime() {
+void      Memory::updateClock() {
   now = rtc.GetDateTime();
   //  printTime(const now);
 }
-//void Memory::setClockTime(uint16_t year, uint8_t month, uint8_t dayOfMonth, uint8_t hour, uint8_t minute, uint8_t second) {
-//  rtc.SetIsRunning(false);
-//  rtc.SetDateTime(RtcDateTime(year, month, dayOfMonth, hour, minute, second));
-//  rtc.SetIsRunning(true);
-//  if (isDateTimeValid()) {
-//    Serial.println("Hora Atualizada com Sucesso");
-//  }
-//  printNowDateTime();
-//}
-//void Memory::printDateTime(const RtcDateTime& dt) {
-//  char datestring[20];
-//  snprintf_P(datestring,
-//             countof(datestring),
-//             PSTR("%02u/%02u/%04u %02u:%02u:%02u"),
-//             dt.Month(),
-//             dt.Day(),
-//             dt.Year(),
-//             dt.Hour(),
-//             dt.Minute(),
-//             dt.Second() );
-//  Serial.print(datestring);
-//}
-//void Memory::printNowDateTime() {
-//  RtcDateTime dt = rtc.GetDateTime();
-//  char datestring[20];
-//  snprintf_P(datestring,
-//             countof(datestring),
-//             PSTR("%02u/%02u/%04u %02u:%02u:%02u"),
-//             dt.Month(),
-//             dt.Day(),
-//             dt.Year(),
-//             dt.Hour(),
-//             dt.Minute(),
-//             dt.Second() );
-//  Serial.print(datestring);
-//}
-float Memory::getTemperature() {
+void      Memory::setClockDateTime(uint16_t year, uint8_t month, uint8_t dayOfMonth, uint8_t hour, uint8_t minute, uint8_t second) {
+  rtc.SetIsRunning(false);
+  rtc.SetDateTime(RtcDateTime(year, month, dayOfMonth, hour, minute, second));
+  rtc.SetIsRunning(true);
+  if (isDateTimeValid()) {
+    Serial.println("Hora Atualizada com Sucesso");
+  }
+  printNowDateTime();
+}
+void      Memory::printDateTime(const RtcDateTime& dt) {
+  char datestring[20];
+  snprintf_P(datestring,
+             countof(datestring),
+             PSTR("%02u/%02u/%04u %02u:%02u:%02u"),
+             dt.Month(),
+             dt.Day(),
+             dt.Year(),
+             dt.Hour(),
+             dt.Minute(),
+             dt.Second() );
+  Serial.print(datestring);
+}
+void      Memory::printNowDateTime() {
+  RtcDateTime dt = rtc.GetDateTime();
+  printDateTime(dt);
+
+}
+float     Memory::getTemperature() {
   RtcTemperature temp = rtc.GetTemperature();
   Serial.print("Temperature: ");
   Serial.print(temp.AsFloat());
   Serial.println("C");
   return temp.AsFloat();
 }
-byte Memory::getTemperatureFromFloatToByte(float tempFloat) {
-//  float tempFloat = rtc.GetTemperature().AsFloat();
+byte      Memory::getTemperatureFromFloatToByte(float tempFloat) {
+  //  float tempFloat = rtc.GetTemperature().AsFloat();
   float decimal = tempFloat - (int)tempFloat;
   byte temp;
-  if(tempFloat >= 0){
-    temp = (byte)tempFloat+64*1; //se for positivo
-  }else{
-    temp = (byte)tempFloat+64*0; //se for negativo
+  if (tempFloat >= 0) {
+    temp = (byte)tempFloat + 64 * 1; //se for positivo
+  } else {
+    temp = (byte)tempFloat + 64 * 0; //se for negativo
   }
-  if((decimal>0.25)&&(decimal<0.75)){
-    temp = temp + 128*1; // se for 0.5
-  }else{
-    temp = temp + 128*0;  // se for 0.0
+  if ((decimal > 0.25) && (decimal < 0.75)) {
+    temp = temp + 128 * 1; // se for 0.5
+  } else {
+    temp = temp + 128 * 0; // se for 0.0
   }
   return temp;
 }
-float Memory::getTemperatureFromByteToFloat(byte temp) {
-//  float tempFloat = rtc.GetTemperature().AsFloat();
+float     Memory::getTemperatureFromByteToFloat(byte temp) {
+  //  float tempFloat = rtc.GetTemperature().AsFloat();
   float floatTemp = 0;
   bool isPositive = 0;
   bool isHalfDecimal = 0;
-  if( temp>127){
+  if ( temp > 127) {
     isHalfDecimal = 1;
     temp = temp - 128;
   }
-  if( temp>63){
+  if ( temp > 63) {
     isPositive = 1;
     temp = temp - 64;
   }
-  return ((float)temp + 0.5*((float)isHalfDecimal)) *(2*((float)isPositive)-1);
+  return ((float)temp + 0.5 * ((float)isHalfDecimal)) * (2 * ((float)isPositive) - 1);
 }
-void Memory::printTemperature() {
+void      Memory::printTemperature() {
   Serial.print("Temperature: ");
   Serial.print( (rtc.GetTemperature()).AsFloat());
   Serial.println("C");
 }
-bool Memory::isDateTimeValid() {
+bool      Memory::isDateTimeValid() {
+
   Serial.println("RTC lost confidence in the DateTime!");
   return rtc.IsDateTimeValid();
+}
+uint16_t  Memory::getYear() {
+  return now.Year();
+}
+uint8_t   Memory::getMonth() {
+  return now.Month();
+}
+uint8_t   Memory::getDay() {
+  return now.Day();
+}
+uint8_t   Memory::getHour() {
+  return now.Hour();
+}
+uint8_t   Memory::getMinute() {
+  return now.Minute();
+}
+uint8_t   Memory::getSecond() {
+  return now.Second();
 }

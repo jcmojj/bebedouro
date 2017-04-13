@@ -135,7 +135,7 @@ void setup() {
 // Testes Setup
 //memory.memTest();
 //internet.jsonTest();
-//memory.memoryTest();//apaga e testa
+memory.memoryTest();//apaga e testa
 
   service.begin();
 }
