@@ -100,16 +100,16 @@ class Memory {
     void snTest();
 
 
-        byte getDrinkAlarmPositionQuantity(); //0=sem posicao - 1<=posicao<=25 //no
-        bool addDrinkAlarm(byte hour, byte minute); //no
-        byte findDrinkAlarmPositionFrom(byte hour, byte minute); //no
-        bool cleanDrinkAlarm(byte hour, byte minute); //no
-        byte getDrinkAlarmHourFromPosition(byte position); //no
-        byte getDrinkAlarmMinuteFromPosition(byte position); //no
-        byte getDrinkAlarmNextAlarmPosition(byte hour, byte minute); //0=sem posicao - 1<=posicao<=25 //no
-        void cleanDrinkAlarmAllPosition(); //no
-        void drinkAlarmTest(); //no
-        byte getDrinkAlarmExactAlarmPosition(byte hour, byte minute);
+//        byte getDrinkAlarmPositionQuantity(); //0=sem posicao - 1<=posicao<=25 //no
+//        bool addDrinkAlarm(byte hour, byte minute); //no
+//        byte findDrinkAlarmPositionFrom(byte hour, byte minute); //no
+//        bool cleanDrinkAlarm(byte hour, byte minute); //no
+//        byte getDrinkAlarmHourFromPosition(byte position); //no
+//        byte getDrinkAlarmMinuteFromPosition(byte position); //no
+//        byte getDrinkAlarmNextAlarmPosition(byte hour, byte minute); //0=sem posicao - 1<=posicao<=25 //no
+//        void cleanDrinkAlarmAllPosition(); //no
+//        void drinkAlarmTest(); //no
+//        byte getDrinkAlarmExactAlarmPosition(byte hour, byte minute);
 
     byte getAlarmHourFromPosition           (byte position, int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize);
     byte getAlarmMinuteFromPosition         (byte position, int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize);
@@ -121,6 +121,41 @@ class Memory {
     bool cleanAlarm                (byte hour, byte minute, int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize);
     bool addAlarm                  (byte hour, byte minute, int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize);
     void AlarmTest                                         (int AlarmPositionsBegin, byte AlarmPositions, byte AlarmPositionsSize);
+
+byte getDrinkAlarmHourFromPosition  (byte position);
+byte getDrinkAlarmMinuteFromPosition(byte position);
+byte getDrinkAlarmPositionQuantity  ();
+byte findDrinkAlarmPositionFrom     (byte hour, byte minute);
+void cleanDrinkAlarmAllPosition     ();
+byte getDrinkAlarmNextAlarmPosition (byte hour, byte minute);
+byte getDrinkAlarmExactAlarmPosition(byte hour, byte minute);
+bool cleanDrinkAlarm                (byte hour, byte minute);
+bool addDrinkAlarm                  (byte hour, byte minute);
+void drinkAlarmTest                 ();   
+
+byte getMealAlarmHourFromPosition  (byte position);
+byte getMealAlarmMinuteFromPosition(byte position);
+byte getMealAlarmPositionQuantity  ();
+byte findMealAlarmPositionFrom     (byte hour, byte minute);
+void cleanMealAlarmAllPosition     ();
+byte getMealAlarmNextAlarmPosition (byte hour, byte minute);
+byte getMealAlarmExactAlarmPosition(byte hour, byte minute);
+bool cleanMealAlarm                (byte hour, byte minute);
+bool addMealAlarm                  (byte hour, byte minute);
+void mealAlarmTest                 ();   
+
+byte getCleaningAlarmHourFromPosition  (byte position);
+byte getCleaningAlarmMinuteFromPosition(byte position);
+byte getCleaningAlarmPositionQuantity  ();
+byte findCleaningAlarmPositionFrom     (byte hour, byte minute);
+void cleanCleaningAlarmAllPosition     ();
+byte getCleaningAlarmNextAlarmPosition (byte hour, byte minute);
+byte getCleaningAlarmExactAlarmPosition(byte hour, byte minute);
+bool cleanCleaningAlarm                (byte hour, byte minute);
+bool addCleaningAlarm                  (byte hour, byte minute);
+void cleaningAlarmTest                 ();   
+
+
 
     
     //    void rtcLoop();
