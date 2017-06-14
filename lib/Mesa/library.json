@@ -1,0 +1,19 @@
+{
+"name": "Mesa",
+"frameworks": "Arduino",
+"keywords": "mesa linear",
+"description": "Controle de mesa linear via codigo",
+"authors":
+[
+    {
+        "name": "Jose Carlos Oliveira",
+        "email": "jcmojj@gmail.com",
+        "maintainer": true
+    }
+],
+"repository":
+{
+    "type": "git",
+    "url": "https://github.com/jcmojj/Bebedouro/Mesa"
+}
+}

@@ -44,17 +44,20 @@ boolean switchDown            = 0;
 boolean operationIsWait       = 1;
 
 boolean directionChangeBySwitch = 0; // set true while direction didnt change yet
-
+long stepCount = 0;  // number of steps the motor has taken
 
 int speedPinRead              = 560;
 int motorSpeed                = 60;
 
+String serialString;
 
 
 // initialize the stepper library on pins 8 through 11:
 Stepper myStepper(stepsPerRevolution, stepperIN1, stepperIN2, stepperIN3, stepperIN4);
+Ultrasonic ultrasonic(hcsr04Trigger, hcsr04Echo);
+float getMaxSpeed();
 
-long stepCount = 0;  // number of steps the motor has taken
+static float rpm = getMaxSpeed();
 
 void setup() {
 
@@ -64,9 +67,13 @@ void setup() {
   // stepper functions -- o !->not  serve para inverter a logica do INPUT_PULLUP
   pinMode(LED_BUILTIN,        OUTPUT);
 //  pinMode(directionPin,       INPUT_PULLUP);
+
   pinMode(operationIsMovePin, INPUT_PULLUP);
   pinMode(oneTurnPin,         INPUT_PULLUP);
   pinMode(oneStepPin,         INPUT_PULLUP);
+
+  pinMode(switchUpPin, INPUT_PULLUP);
+  pinMode(switchDownPin, INPUT_PULLUP);  
 }
 
 
@@ -76,7 +83,7 @@ void loop() {
   // stepper functions
   setLed(); // activate led
   setSpeed();      // Velocidade - ligar potenciometro - pino analogico A2
-  setDirection();  // Sentido - ligar botaoA/B - pino digital 4
+//  setDirection();  // Sentido - ligar botaoA/B - pino digital 4
   setOperation();  // Modo - 1 volta / constante - pino digital 5 
   setOneTurn();    // Ativa 1 volta - botao click - pino digital 6
   setOneStep();    // Ativa 1 step - botao click - pino digital 7
@@ -126,34 +133,68 @@ void setOperation(){
     }
 }
 
-void setDirection(){
-  if( ( (!digitalRead(switchUpPin))||(!digitalRead(switchDownPin)) )&&(!directionChangeBySwitch) ){ // ativa mudanca de direcao e comeca a ignorarar switch ativado
-    directionChangeBySwitch = true;
-    estaSubindo = !estaSubindo;
-  }
-  if( ( (digitalRead(switchUpPin))&&(digitalRead(switchDownPin)) )&&(directionChangeBySwitch) ){ // se switch desativado e mudanca ja comecou, confirma mudanca
-    directionChangeBySwitch = false;
-    Serial.println("setDirection b");
-  }
-//  if( ( ( millis() - directionTime ) > 500 )&&(!digitalRead(directionPin)) ){ // mudanca de direcao porque apertou o botao
+//void setDirection(){
+////  if( !digitalRead(switchUpPin)&&(!directionChangeBySwitch) ){ // ativa mudanca de direcao e comeca a ignorarar switch ativado
+////    directionChangeBySwitch = true;
+////    estaSubindo = !estaSubindo;
+////  }
+//  
+//  if( ( (!digitalRead(switchUpPin))||(!digitalRead(switchDownPin)) )&&(!directionChangeBySwitch) ){ // ativa mudanca de direcao e comeca a ignorarar switch ativado
+//    directionChangeBySwitch = true;
 //    estaSubindo = !estaSubindo;
-//    directionTime = millis();
 //  }
-  Serial.print("setDirection: "); Serial.print(estaSubindo?"Cima":"Baixo");
-}
+//  if( ( (digitalRead(switchUpPin))&&(digitalRead(switchDownPin)) )&&(directionChangeBySwitch) ){ // se switch desativado e mudanca ja comecou, confirma mudanca
+//    directionChangeBySwitch = false;
+//    Serial.println("setDirection b");
+//  }
+////  if( ( ( millis() - directionTime ) > 500 )&&(!digitalRead(directionPin)) ){ // mudanca de direcao porque apertou o botao
+////    estaSubindo = !estaSubindo;
+////    directionTime = millis();
+////  }
+//  Serial.print("setDirection: "); Serial.print(estaSubindo?"Cima":"Baixo");
+//}
 
-void setSpeed(){
-  speedPinRead = analogRead(A2); // tem que alimentar com 1.1v ou fazer um divisor
+float getMaxSpeed(){
   float pps = 1100; // 1100pps-3.2kgf.cm -- 1200pps-2.2kgf.cm -- pulses per second
   float degree_per_step = 1.8;
   float steps_per_turn = 360/degree_per_step;
   float rpm = (pps/steps_per_turn)*60;
+  return rpm;
+}
+
+void setSpeed(){
+  speedPinRead = analogRead(A2); // tem que alimentar com 1.1v ou fazer um divisor
   motorSpeed = map(speedPinRead, 0, 1023, 0, rpm);
     // set the motor speed:
   if (motorSpeed > 0) {
     myStepper.setSpeed(motorSpeed);
     Serial.print(" - Speed: "); Serial.print(motorSpeed);
   }  
+}
+
+
+void serialRead(){
+  while(Serial.available()){
+    serialString = Serial.readString();
+  }
+  if(!serialString.compareTo("caramba")){
+    Serial.print("testeok");
+  }
+  // sobe e para no switch - velocidade alta
+  // desce e para no switch - velocidade alta
+  // calibrar - vai ate embaixo, encontra o switch inferior e sobe ate o de cima - velocidade baixa
+  // medir(tipo,intervalo) - sobe rapido ate o switch, e desce lento fazendo medicoes do modelo com o intervalo, depois sobe lento fazendo as mesmas medidas, depois desce rapido
+  // numero - se for numero anda os estepes levando em consideracao o sinal
+  
+  
+}
+
+bool switchUpIsOn(){
+  return !digitalRead(switchUpPin);
+}
+
+bool switchDownIsOn(){
+  return !digitalRead(switchDownPin);
 }
 
 void setLed(){
@@ -172,6 +213,28 @@ float getAlturaMesaMM(){
   const float alturaMinima = 35.5;
   const float passo = 2400/800;
   return alturaMinima + stepCount/passo;
+}
+
+//int estaSubindo(){
+//  return (1+2*((byte)estaSubindo-1);
+//}
+
+void calibrar(){
+  myStepper.setSpeed(0.15*motorSpeed);
+  estaSubindo = false;
+  while (digitalRead(switchDownPin)){
+    
+  }
+}
+
+float getDistanciaUltrasomMm(){
+  long microsec = ultrasonic.timing();
+  return ultrasonic.convert(microsec, Ultrasonic::CM);
+}
+
+float getDistanciaUltrasomPol(){
+  long microsec = ultrasonic.timing();
+  return ultrasonic.convert(microsec, Ultrasonic::IN);
 }
 
 
