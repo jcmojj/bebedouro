@@ -14,9 +14,11 @@ void Memory::memoryTest() {
   //  emailTest();
   //  print();
   //  cleanInfoMemory();
-  //  printInfo();
-  //  print();
-  //  preenchendoDrinksParaTeste();
+//    printInfo();
+//    print();
+//    cleanDataMemory();
+    preenchendoDrinksParaTeste();
+    printData();
 
   Serial.print("Drink TESTE TESTE TESTE TESTE TESTE TESTE TESTE ");
   drinkAlarmTest();
@@ -1221,6 +1223,7 @@ void Memory::cleanDataMemory() {
     }
   }
   byte firstByte = 0;
+  //Importante
   mem.write(dataMemoryBegin + 2, firstByte);
   Serial.println("\nDrink data has been clean!");
 }

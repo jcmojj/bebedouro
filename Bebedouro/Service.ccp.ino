@@ -8,27 +8,51 @@ Service::Service(Memory &memory, Drink &drink) {
 
 }
 void Service::begin(){ //no setup
-  memory.rtcBegin();
+  Serial.print("Service Begin");
+  memory.rtcBegin(); //-------> adicionar
   _clockInterval = 500;
-  _clockMillis = 0;
-  analogInputBegin();
-
-  
+  _clockMillis = millis();
+  pinMode(outputA0, OUTPUT);
+  digitalWrite(outputA0, LOW);
+  pinMode(outputA1, OUTPUT);
+  digitalWrite(outputA1, LOW);
+  pinMode(outputA2, OUTPUT);
+  digitalWrite(outputA2, LOW);
+  pinMode(analogPin, INPUT);
+  _ainputReadInterval = 15;
+  _ainputReadMillis = millis();
+  _ainputPrintMillis = millis();
+  _inputPinCounter = 0; // pino lido
+  _selectInputPin = 255; //pino a ser lido ou 255 para ler todos
+  Serial.print("Service End");
 }
 void Service::loop() {
-  yield();
   if((_clockMillis-millis()) > _clockInterval){
     memory.updateClock();
+    _clockMillis=millis();
   }
-  
-  yield();
+
   if((_ainputReadMillis-millis()) > _ainputReadInterval){
-    if(_fixInputPin<8){
-      updateInputPinValue(_fixInputPin);
+    if(_selectInputPin<8){
+      updateInputPinValue(_selectInputPin);
     }else{
       updateInputPinValue(255);
     }
+    _ainputReadMillis = millis();
   }
+  if((_ainputPrintMillis-millis()) > 500*_ainputReadInterval){
+    for(int i =0; i<8;i++){
+      yield();
+      Serial.print(" - Pino[");
+      Serial.print(i);
+      Serial.print("]: ");
+      Serial.print(_analogInput[i]);
+      Serial.print("V");
+    }
+    Serial.println("");
+    _ainputPrintMillis=millis();
+  }
+//
   
 }
 
@@ -52,73 +76,26 @@ void Service::loop() {
  * 15-Y2 - 010
  * 16-VDD-3-15V
  */
-void Service::analogInputBegin(){
-  pinMode(outputA0, OUTPUT);
-  digitalWrite(outputA0, LOW);
-  pinMode(outputA1, OUTPUT);
-  digitalWrite(outputA1, LOW);
-  pinMode(outputA2, OUTPUT);
-  digitalWrite(outputA2, LOW);
-  _ainputReadInterval = 150;
-  _ainputReadMillis = 0;
-  _inputPinCounter = 0;
-  _fixInputPin = 255;
-  for(byte i=0;i<8;i++){
-    _analogInput[i]=0;
-  }
-}
+
  
 void Service::updateInputPinValue(byte pin){
+  _analogInput[_inputPinCounter] = analogRead(analogPin);///+_analogInput[_inputPinCounter])/2;
   if(pin < 8){
     _inputPinCounter = pin;
-  }else if(_inputPinCounter == 8){
+  }else if(_inputPinCounter > 6){
     _inputPinCounter = 0;
   }else{
     _inputPinCounter++;
-  }
-  switch(_inputPinCounter){
-    case 0:
-      digitalWrite(outputA0, LOW);
-      digitalWrite(outputA1, LOW);
-      digitalWrite(outputA2, LOW);
-    break;
-    case 1:
-      digitalWrite(outputA0, HIGH);
-      digitalWrite(outputA1, LOW);
-      digitalWrite(outputA2, LOW);
-    break;
-    case 2:
-      digitalWrite(outputA0, LOW);
-      digitalWrite(outputA1, HIGH);
-      digitalWrite(outputA2, LOW);
-    break;
-    case 3:
-      digitalWrite(outputA0, HIGH);
-      digitalWrite(outputA1, HIGH);
-      digitalWrite(outputA2, LOW);
-    break;
-    case 4:
-      digitalWrite(outputA0, LOW);
-      digitalWrite(outputA1, LOW);
-      digitalWrite(outputA2, HIGH);
-    break;
-    case 5:
-      digitalWrite(outputA0, HIGH);
-      digitalWrite(outputA1, LOW);
-      digitalWrite(outputA2, HIGH);
-    break;
-    case 6:
-      digitalWrite(outputA0, LOW);
-      digitalWrite(outputA1, HIGH);
-      digitalWrite(outputA2, HIGH);
-    break;
-    case 7:
-      digitalWrite(outputA0, HIGH);
-      digitalWrite(outputA1, HIGH);
-      digitalWrite(outputA2, HIGH);
-    break; 
-  }
-  _analogInput[_inputPinCounter] = analogRead(analogPin);
+  }   
+      Serial.print("inputPinCounter:"); Serial.print(_inputPinCounter);
+      Serial.print(" =("); Serial.print(bitRead(_inputPinCounter,0));
+      Serial.print(","); Serial.print(bitRead(_inputPinCounter,1));
+      Serial.print(","); Serial.print(bitRead(_inputPinCounter,2));Serial.print(")");
+      digitalWrite(outputA0, bitRead(_inputPinCounter,0));
+      digitalWrite(outputA1, bitRead(_inputPinCounter,1));
+      digitalWrite(outputA2, bitRead(_inputPinCounter,2));
+
+ 
 }
 
 

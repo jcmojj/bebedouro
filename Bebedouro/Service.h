@@ -5,9 +5,9 @@
 #include <RtcDateTime.h>
 
 #define analogPin A0
-#define outputA0 6
-#define outputA1 7
-#define outputA2 8
+#define outputA0  D6
+#define outputA1  D7
+#define outputA2  D8
 
 
 #include <pgmspace.h>
@@ -80,15 +80,16 @@ class Service{
     Drink *_drink;
     int _clockInterval;
     long _clockMillis;
-    byte _ainputReadInterval;
+    int _ainputReadInterval;
+    long _ainputPrintMillis;
     long _ainputReadMillis;
     int _analogInput[8];
+//    bool _boot;
 
-
-    void analogInputBegin();
+   
     void updateInputPinValue(byte pin);
     byte _inputPinCounter;
-    byte _fixInputPin;
+    byte _selectInputPin;
     
     void inputBegin();
 };

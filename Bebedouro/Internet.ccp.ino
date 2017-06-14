@@ -190,6 +190,7 @@ void Internet::jsonTest(){
    int posmax =0;
    while((teste[posmax] != '\0')){//&&(posmax<tamanho)){
     posmax++;
+    yield();
    }
    Serial.print("Posmax: "); Serial.println(posmax);
 
@@ -200,6 +201,7 @@ void Internet::jsonTest(){
    Serial.print("Tamanho: "); Serial.println(tamanho2);
    int posmax2 =0;
    while((teste2[posmax2] != '\0')&&(posmax2<tamanho2)){
+    yield();
     posmax2++;
    }
    Serial.print("Posmax: "); Serial.println(posmax2);   

@@ -51,6 +51,7 @@ void setup() {
 //  memory.printData();
   /* ----------------------- SETUP - WiFiManager ----------------------- */
   pinMode(BUILTIN_LED, OUTPUT);
+  service.begin();
   ticker.attach(0.6, tick);
   WiFiManager wifiManager;
 //  wifiManager.resetSettings(); //reset saved settings
@@ -94,8 +95,9 @@ void setup() {
    Serial.println("Fim do WiFi Manager"); 
 //// teste da memoria recebendo alarmes
 //  memory.DrinkAlarmTest();
-////  zerando e preenchendo a memoria
-//  memory.preenchendoDrinksParaTeste();
+//  zerando e preenchendo a memoria
+  
+  //memory.memoryTest();//<-----------------------------------
 
 
 //     webSocket.begin("ws://localhost:8080/EchoChamber/echo", 80);
@@ -135,9 +137,9 @@ void setup() {
 // Testes Setup
 //memory.memTest();
 //internet.jsonTest();
-memory.memoryTest();//apaga e testa
+//memory.memoryTest();//apaga e testa
 
-  service.begin();
+//  service.begin();//<------------------
 }
   /* ------------------------------------------------------------------- */
   /* -----------------------     END - SETUP     ----------------------- */
@@ -153,7 +155,7 @@ void loop() {
   
   webSocket.loop(); // coloca um valor no position receive // verifica que recebeu o valor position = 40
   internet.loop();
-  service.loop();
+//  service.loop();
 
 
   
@@ -164,7 +166,7 @@ void loop() {
 //  }
 
 //i++;
-  delay(10);
+//  delay(10);
 
 }
   /* ------------------------------------------------------------------- */
