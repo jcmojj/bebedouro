@@ -2,7 +2,7 @@
 #include "Table.h"
 
 long baud = 9600;
-Table  mesa = Table(baud);
+Table  mesa = Table(baud,200, 20,0.0175);
 
 void setup() {
   Serial.begin(baud);
@@ -13,4 +13,5 @@ void setup() {
 void loop() {
   mesa.updatePinData();
   mesa.serialRead();
+  
 }

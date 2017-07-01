@@ -5,8 +5,14 @@
 //  _ultrasonic = &ultrasonic;
 //}
 
-Table::Table(long baudrate):stepper(stepsPerRevolution, stepperIN1, stepperIN2, stepperIN3, stepperIN4),motor(stepsPerRevolution, stepperIN1, stepperIN2, stepperIN3, stepperIN4),ultrasonic(hcsr04Trigger, hcsr04Echo){
+Table::Table(long baudrate, int stepsPerRevolution, int encoderPulsePerRev, float encoderMmPerPulse):
+        stepper(_stepsPerRevolution, stepperIN1, stepperIN2, stepperIN3, stepperIN4),
+        motor(stepperIN1, stepperIN2, stepperIN3, _stepsPerRevolution, stepperIN1, stepperIN2, stepperIN3, stepperIN4),
+         ultrasonic(hcsr04Trigger, hcsr04Echo),
+         sharpir(),
+         encoder(encoderdt, encoderclk){
   Serial.begin(baudrate);
+  _stepsPerRevolution = stepsPerRevolution;
   pinMode(switchUpPin, INPUT_PULLUP);
   pinMode(switchDownPin, INPUT_PULLUP);  
   subindo = false;
@@ -22,6 +28,11 @@ Table::Table(long baudrate):stepper(stepsPerRevolution, stepperIN1, stepperIN2, 
   stepper.setSpeed(maxSpeedRPM);
   t0 = 0;
   t1 = 0;
+  movendoCounter = 0;
+  encoderZero = 0;
+  _encoderPulsePerRev = encoderPulsePerRev;
+  _encoderMmPerPulse = encoderMmPerPulse;
+  _mmPerRev =  _encoderPulsePerRev * _encoderMmPerPulse;
 }
 
 
@@ -31,6 +42,15 @@ Table::Table(long baudrate):stepper(stepsPerRevolution, stepperIN1, stepperIN2, 
 void Table::serialRead(){
   while(Serial.available()){
     serialString = Serial.readString();
+//    Serial.println(serialString);
+//    Serial.println(serialString[0]);
+//    Serial.println(serialString[4]);
+//    Serial.println(serialString.substring(0,4));
+//    Serial.println(serialString.substring(0,4).compareTo("mover"));
+//    Serial.println(!serialString.substring(0,4).compareTo("mover"));
+//    Serial.println(serialString.substring(0,5));
+//    Serial.println(serialString.substring(0,5).compareTo("mover"));
+//    Serial.println(!serialString.substring(0,5).compareTo("mover"));
   }
   if( (!serialString.compareTo("subir"))||(subindo) ){
     subir(); 
@@ -41,8 +61,24 @@ void Table::serialRead(){
   if( (!serialString.compareTo("descer"))||(descendo) ){
     descer();
   }
-  if(!serialString.substring(0,4).compareTo("mover")){
+  if(!serialString.substring(0,5).compareTo("mover")||(movendoCounter!=0)){
+    if(!serialString.compareTo("")){
+      if(movendoCounter>0){movendoCounter--;}
+      if(movendoCounter<0){movendoCounter++;}
+    }else{
+      movendoCounter = serialString.substring(serialString.indexOf("(")+1,serialString.indexOf(")")).toInt();
+      Serial.println("movendo");
+    }
     mover();
+//    Serial.print("\nsubstring: ");
+//    Serial.print(serialString.substring(serialString.indexOf("(")+1,serialString.indexOf(")")));
+//        Serial.print("\nsubstringtoInt: ");
+//    Serial.print(serialString.substring(serialString.indexOf("(")+1,serialString.indexOf(")")).toInt());
+//    serialString.substring(serialString.indexOf("("),serialString.indexOf(")"));
+    
+  }
+    if( (!serialString.compareTo("medir"))||(medindo) ){
+    medir();
   }
   // sobe e para no switch - velocidade alta
   // desce e para no switch - velocidade alta
@@ -54,45 +90,110 @@ void Table::serialRead(){
 }
 
 void Table::subir(){
-  if(!subindo){Serial.print("Subindo");}
+  if(!subindo){Serial.println("Subindo");}
   subindo = true;
   if(!switchUpIsOn){
-    if(stepCounter > (stepTotal-stepsPerRevolution) ){
+    if(stepCounter > (stepTotal-_stepsPerRevolution) ){
       stepper.setSpeed(motorSpeedRPM/10);
     }
     stepper.step(stepMin);
     stepCounter += stepMin;
+    printStepData();
 //    delay(stepMin);
   }else{
     subindo = false;
-    Serial.print("Fim de Curso Superior - ");
+    printStepData();
+    Serial.print("\nFim de Curso Superior - ");
   }
-  printStepData();
 }
 void Table::descer(){
-  if(!descendo){Serial.print("descendo");}
+  if(!descendo){Serial.println("Descendo");}
   descendo = true;
   if(!switchDownIsOn){
-    if(stepCounter < (stepsPerRevolution) ){
+    if(stepCounter < (_stepsPerRevolution) ){
       stepper.setSpeed(motorSpeedRPM/10);
     }
     stepper.step(-stepMin);
     stepCounter += -stepMin;
+    printStepData();
 //    delay(stepMin);
   }else{
     descendo = false;
-    Serial.print("Fim de Curso Inferior - ");
+    printStepData();
+    Serial.print("\nFim de Curso Inferior - ");
   }
-  printStepData();
 }
 void Table::mover(){
-  movendo = true;
+  if(movendoCounter!=0){
+    if( (stepCounter < (_stepsPerRevolution) )||(stepCounter > (stepTotal-_stepsPerRevolution)) ){
+      stepper.setSpeed(motorSpeedRPM/10);
+    }
+    if(movendoCounter>0){
+      stepper.step(stepMin);
+      stepCounter += stepMin;
+    }
+    if(movendoCounter<0){
+      stepper.step(-stepMin);
+      stepCounter += -stepMin;
+    }
+    printStepData();
+
+//    delay(stepMin);
+  }else{
+    printStepData();
+//    movendoCounter = 0;
+    Serial.print("\nFim de Movimento - ");
+  }
+  if(switchDownIsOn||switchUpIsOn){
+    printStepData();
+    movendoCounter = 0;
+    Serial.print("\nFim de Movimento - ");
+    Serial.print("\nFim de Curso");
+  }
 }
 void Table::calibrar(){
-  
+  stepper.setSpeed(motorSpeedRPM/10);
+  while(!switchDownIsOn){
+    stepper.step(-1);
+  }
+  int stepTotalInternoUp = 0;
+  int stepTotalInternoDown = 1000;
+  do{
+  stepTotalInternoUp = 0;
+  while(!switchUpIsOn){
+    stepper.step(+1);
+    stepTotalInternoUp++;
+  }
+  stepTotalInternoDown = 0;
+  while(!switchDownIsOn){
+    stepper.step(-1);
+    stepTotalInternoDown++;
+  }
+  Serial.print("\nUp:");
+  Serial.print(stepTotalInternoUp);
+  Serial.print(" - Down: ");
+  Serial.print(stepTotalInternoDown);
+  }while(stepTotalInternoUp!=stepTotalInternoDown);
+  Serial.println("-Ok");
+  stepTotal = stepTotalInternoDown;
 }
 void Table::medir(){
+  stepper.step(stepTotal); // deve estar embaixo
+  long steps = 0;
+  long stepsToGo = stepTotal;
+  while(stepTotal!=0){
+
+    
+    printMeasureData();
+  }
   
+}
+
+void Table::printMeasureData(){
+  // imprimir encoder
+  // imprimir sharp
+  Serial.print ("");
+  Serial.print (" -US: ");Serial.print (getDistanciaUltrasomMm());
 }
 void Table::printStepData(){
   printStepCounter();
@@ -116,6 +217,7 @@ void Table::printStepCounter(){
   Serial.print(" -Counting: "); Serial.print(stepCounter); Serial.print("steps");
 }
 void Table::updatePinData(){
+  encoder.tick();
   switchUpIsOn = !digitalRead(switchUpPin);
   switchDownIsOn = !digitalRead(switchDownPin);
   motorSpeedRPM = map(analogRead(speedPin), 0, 1023, 0, maxSpeedRPM);
@@ -130,6 +232,16 @@ float Table::getDistanciaUltrasomMm(){
 float Table::getDistanciaUltrasomPol(){
   long microsec = ultrasonic.timing();
   return ultrasonic.convert(microsec, Ultrasonic::IN);
+}
+long Table::getEncoderPosition(){
+  return encoder.getPosition()-encoderZero;
+}
+void Table::setEncoderZero(){
+  encoderZero = encoder.getPosition();
+  encoder.setPosition(encoderZero);
+}
+double Table::getEncoderPositionMm(){
+  return getEncoderPosition();
 }
 
 

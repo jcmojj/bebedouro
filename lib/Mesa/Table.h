@@ -5,6 +5,7 @@
 #include <Ultrasonic.h>
 #include "Sharpir.h"
 #include "Motor.h"
+#include <RotaryEncoder.h>
 
 const uint8_t RX                 = 0;
 const uint8_t TX                 = 1;
@@ -23,14 +24,14 @@ const byte sharpIRaPin           = 14; //A0
 const byte sharpIRbPin           = 15; //A1
 const uint8_t speedPin           = 16; //A2
 const uint8_t livre3             = 17; //A3
-const uint8_t livre4             = 18; //A4
-const uint8_t livre5             = 19; //A5
-const uint8_t livre6             = 20; //A6
-const uint8_t livre7             = 21; //A7
+const uint8_t livre4             = 18; //A4 - sda - wire
+const uint8_t livre5             = 19; //A5 - scl - wire
+const uint8_t encoderdt          = 20; //A6
+const uint8_t encoderclk         = 21; //A7
 
 
 //Stepper
-const int stepsPerRevolution = 200; // = 360/1.8
+//const int _stepsPerRevolution = 200; // = 360/1.8
 
 //String serialString;
 
@@ -39,13 +40,14 @@ const int stepsPerRevolution = 200; // = 360/1.8
 class Table{
 
   public:
-    Table(long baudrate);
+    Table(long baudrate, int stepsPerRevolution, int encoderPulsePerRev, float encoderMmPerPulse);
     
     
     void updatePinData();
     void serialRead();
 
     void printStepData();
+    void printMeasureData();
     
     int getMotorSpeedRPM();
     float getDistanciaUltrasomPol();
@@ -70,6 +72,8 @@ class Table{
     bool subindo;
     bool descendo;
     bool movendo;
+    int movendoCounter;
+    int medindo;
 
     int stepMin;
     long stepTotal;
@@ -84,11 +88,19 @@ class Table{
     long t0;
     long t1;
     
-    
+
+    long encoderZero;
+    long getEncoderPosition();
+    void setEncoderZero();
+    double getEncoderPositionMm();
     
     Ultrasonic ultrasonic;
     Motor motor;
     Sharpir sharpir;
-    
+    RotaryEncoder encoder;
+    int _stepsPerRevolution;
+    int _encoderPulsePerRev;
+    float _encoderMmPerPulse;
+    float _mmPerRev;
 };
 #endif
